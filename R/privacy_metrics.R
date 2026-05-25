@@ -13,8 +13,17 @@
 #' syn  <- data.frame(x = rnorm(50), y = rnorm(50))
 #' nndr(real, syn)
 nndr <- function(real, synthetic) {
-  real_mat <- as.matrix(real[, vapply(real, is.numeric, logical(1)), drop = FALSE])
-  syn_mat  <- as.matrix(synthetic[, vapply(synthetic, is.numeric, logical(1)), drop = FALSE])
+  # Use the intersection of numeric column names so that columns typed as
+  # categorical in metadata (character in synthetic, integer in real) do not
+  # cause a dimension mismatch inside FNN::knnx.dist.
+  real_num   <- names(real)[vapply(real, is.numeric, logical(1))]
+  syn_num    <- names(synthetic)[vapply(synthetic, is.numeric, logical(1))]
+  shared_num <- intersect(real_num, syn_num)
+
+  if (length(shared_num) == 0L) return(1)
+
+  real_mat <- as.matrix(real[, shared_num, drop = FALSE])
+  syn_mat  <- as.matrix(synthetic[, shared_num, drop = FALSE])
 
   if (ncol(real_mat) == 0 || ncol(syn_mat) == 0) return(1)
   if (nrow(real_mat) < 2L) stop("`real` must have at least 2 rows for NNDR computation")

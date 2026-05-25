@@ -49,6 +49,13 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
 
   object$transformers <- fit_transformers(data, meta)
 
+  unsupported <- names(Filter(is.null, object$transformers))
+  if (length(unsupported) > 0L)
+    warning(sprintf(
+      "Column(s) %s have unsupported type(s) (e.g. 'datetime', 'id') and will be excluded from synthetic output.",
+      paste(sprintf("'%s'", unsupported), collapse = ", ")
+    ))
+
   if (length(num_cols) >= 2L) {
     # Build uniform pseudo-observations from each numerical column
     u_mat <- do.call(cbind, lapply(num_cols, function(col) {
@@ -155,6 +162,9 @@ sample.gaussian_copula_synthesizer <- function(x, n = 100, max_tries = 100L, ...
   for (col in bool_cols) {
     result[[col]] <- as.logical(stats::rbinom(n, 1L, x$transformers[[col]]$prob_true))
   }
+
+  # Drop columns with no transformer (unsupported types: datetime, id)
+  result <- Filter(Negate(is.null), result)
 
   as.data.frame(result, stringsAsFactors = FALSE)
 }

@@ -35,11 +35,15 @@ invert_numerical_transformer <- function(u, tr) {
 
 #' @noRd
 fit_categorical_transformer <- function(x) {
+  is_factor  <- is.factor(x)
+  is_ordered <- is.ordered(x)
   x_char     <- as.character(x)
-  levels_vec <- sort(unique(x_char))
+  # Preserve factor level order; for plain characters, sort for determinism
+  levels_vec <- if (is_factor) levels(x) else sort(unique(x_char[!is.na(x_char)]))
   freq       <- tabulate(match(x_char, levels_vec))
   prob       <- freq / sum(freq)
-  list(type = "categorical", levels = levels_vec, prob = prob)
+  list(type = "categorical", levels = levels_vec, prob = prob,
+       is_factor = is_factor, is_ordered = is_ordered)
 }
 
 #' @noRd
@@ -55,7 +59,9 @@ invert_categorical_transformer <- function(codes, tr) {
 #' Sample n values from a categorical transformer's empirical distribution
 #' @noRd
 sample_categorical <- function(n, tr) {
-  tr$levels[sample.int(length(tr$levels), n, replace = TRUE, prob = tr$prob)]
+  vals <- tr$levels[sample.int(length(tr$levels), n, replace = TRUE, prob = tr$prob)]
+  if (isTRUE(tr$is_factor)) factor(vals, levels = tr$levels, ordered = isTRUE(tr$is_ordered))
+  else vals
 }
 
 # BooleanTransformer ----------------------------------------------------------
