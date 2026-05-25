@@ -106,16 +106,34 @@ ml_efficacy <- function(real, synthetic, meta, target_col,
 
   formula <- stats::as.formula(paste(target_col, "~ ."))
 
-  fit_syn  <- rpart::rpart(formula, data = synthetic,  method = "class")
-  fit_real <- rpart::rpart(formula, data = train_real, method = "class")
+  # Convert character columns to factors with levels from the full real dataset
+  # before fitting. This ensures rpart's xlevels cover every value in test_real,
+  # preventing "factor has new levels" errors when rare values appear only in
+  # the held-out fold or only in the real data (not the 500-row synthetic sample).
+  fit_syn  <- rpart::rpart(formula, data = .set_levels(synthetic,  real), method = "class")
+  fit_real <- rpart::rpart(formula, data = .set_levels(train_real, real), method = "class")
 
   pred_syn  <- stats::predict(fit_syn,  newdata = test_real, type = "class")
   pred_real <- stats::predict(fit_real, newdata = test_real, type = "class")
 
-  acc <- function(pred) mean(pred == test_real[[target_col]])
+  acc <- function(pred) mean(pred == test_real[[target_col]], na.rm = TRUE)
   tstr  <- acc(pred_syn)
   trtr  <- acc(pred_real)
   score <- if (trtr > 0) min(tstr / trtr, 1) else 0
 
   list(tstr = tstr, trtr = trtr, score = score)
+}
+
+# Convert character columns in df to factors whose levels are the union of the
+# values present in df and those present in reference. This expands the level
+# set so models fitted on df recognise every value that appears in reference.
+.set_levels <- function(df, reference) {
+  for (col in names(df)) {
+    if (!is.character(df[[col]])) next
+    if (!col %in% names(reference)) next
+    lvls <- sort(union(unique(as.character(df[[col]])),
+                       unique(as.character(reference[[col]]))))
+    df[[col]] <- factor(df[[col]], levels = lvls)
+  }
+  df
 }
