@@ -57,9 +57,10 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
     ))
 
   if (length(num_cols) >= 2L) {
-    # Build uniform pseudo-observations from each numerical column
+    # Fit on complete cases only — rows where every numerical column is non-NA
+    complete <- stats::complete.cases(data[, num_cols, drop = FALSE])
     u_mat <- do.call(cbind, lapply(num_cols, function(col) {
-      apply_numerical_transformer(data[[col]], object$transformers[[col]])
+      apply_numerical_transformer(data[[col]][complete], object$transformers[[col]])
     }))
     colnames(u_mat) <- num_cols
 
@@ -139,32 +140,41 @@ sample.gaussian_copula_synthesizer <- function(x, n = 100, max_tries = 100L, ...
     u_samples <- copula::rCopula(n, x$copula)
     colnames(u_samples) <- num_cols
     for (col in num_cols) {
-      vals <- invert_numerical_transformer(u_samples[, col], x$transformers[[col]])
-      if (x$enforce_min_max) {
-        tr   <- x$transformers[[col]]
+      tr   <- x$transformers[[col]]
+      vals <- invert_numerical_transformer(u_samples[, col], tr)
+      if (x$enforce_min_max)
         vals <- pmin(pmax(vals, tr$min), tr$max)
-      }
-      result[[col]] <- vals
+      result[[col]] <- .apply_miss(vals, tr$miss_rate)
     }
   } else if (length(num_cols) == 1L) {
     col  <- num_cols
-    vals <- invert_numerical_transformer(stats::runif(n), x$transformers[[col]])
-    if (x$enforce_min_max) {
-      tr   <- x$transformers[[col]]
+    tr   <- x$transformers[[col]]
+    vals <- invert_numerical_transformer(stats::runif(n), tr)
+    if (x$enforce_min_max)
       vals <- pmin(pmax(vals, tr$min), tr$max)
-    }
-    result[[col]] <- vals
+    result[[col]] <- .apply_miss(vals, tr$miss_rate)
   }
 
   for (col in cat_cols) {
-    result[[col]] <- sample_categorical(n, x$transformers[[col]])
+    tr <- x$transformers[[col]]
+    result[[col]] <- .apply_miss(sample_categorical(n, tr), tr$miss_rate)
   }
   for (col in bool_cols) {
-    result[[col]] <- as.logical(stats::rbinom(n, 1L, x$transformers[[col]]$prob_true))
+    tr <- x$transformers[[col]]
+    result[[col]] <- .apply_miss(
+      as.logical(stats::rbinom(n, 1L, tr$prob_true)), tr$miss_rate
+    )
   }
 
   # Drop columns with no transformer (unsupported types: datetime, id)
   result <- Filter(Negate(is.null), result)
 
   as.data.frame(result, stringsAsFactors = FALSE)
+}
+
+# Randomly set approximately miss_rate fraction of vals to NA.
+.apply_miss <- function(vals, miss_rate) {
+  if (is.null(miss_rate) || miss_rate <= 0) return(vals)
+  vals[stats::runif(length(vals)) < miss_rate] <- NA
+  vals
 }

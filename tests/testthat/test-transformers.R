@@ -46,6 +46,52 @@ test_that("fit_transformers() returns one transformer per registered column", {
   expect_true(all(c("age", "income", "edu") %in% names(trs)))
 })
 
+test_that("fit_numerical_transformer() records miss_rate", {
+  tr_clean <- fit_numerical_transformer(c(1, 2, 3, 4, 5))
+  expect_equal(tr_clean$miss_rate, 0)
+
+  tr_miss <- fit_numerical_transformer(c(1, NA, 3, NA, 5))
+  expect_equal(tr_miss$miss_rate, 0.4)
+})
+
+test_that("fit_categorical_transformer() records miss_rate", {
+  tr_clean <- fit_categorical_transformer(c("a", "b", "a"))
+  expect_equal(tr_clean$miss_rate, 0)
+
+  tr_miss <- fit_categorical_transformer(c("a", NA, "b", NA, "a"))
+  expect_equal(tr_miss$miss_rate, 0.4)
+})
+
+test_that("fit_boolean_transformer() records miss_rate", {
+  tr_miss <- fit_boolean_transformer(c(TRUE, NA, FALSE, TRUE, NA))
+  expect_equal(tr_miss$miss_rate, 0.4)
+})
+
+test_that("sample() reproduces missingness rates from training data", {
+  df <- data.frame(
+    x = c(1, NA, 3, NA, 5, 6, 7, 8, 9, 10),   # 20% NA
+    y = c("a", "b", NA, "a", "b", "a", "b", "a", NA, "b"),  # 20% NA
+    stringsAsFactors = FALSE
+  )
+  meta <- metadata(df) |>
+    set_column_type("x", "numerical") |>
+    set_column_type("y", "categorical")
+  set.seed(42)
+  syn <- gaussian_copula_synthesizer(meta) |> fit(df)
+  out <- sample(syn, n = 2000)
+  # Observed rates should be within 4pp of the 20% target
+  expect_lt(abs(mean(is.na(out$x)) - 0.2), 0.04)
+  expect_lt(abs(mean(is.na(out$y)) - 0.2), 0.04)
+})
+
+test_that("sample() produces no NAs when training data had none", {
+  df   <- small_data()
+  meta <- small_meta()
+  set.seed(1)
+  out  <- gaussian_copula_synthesizer(meta) |> fit(df) |> sample(n = 100)
+  expect_equal(sum(is.na(out)), 0L)
+})
+
 test_that("apply_transformers() + invert_transformers() round-trips numerical cols", {
   df   <- small_data()
   meta <- small_meta()

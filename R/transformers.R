@@ -8,7 +8,8 @@
 #' @noRd
 fit_numerical_transformer <- function(x) {
   x_clean <- x[is.finite(x)]
-  list(type = "numerical", min = min(x_clean), max = max(x_clean))
+  list(type = "numerical", min = min(x_clean), max = max(x_clean),
+       miss_rate = mean(is.na(x)))
 }
 
 #' @noRd
@@ -43,7 +44,8 @@ fit_categorical_transformer <- function(x) {
   freq       <- tabulate(match(x_char, levels_vec))
   prob       <- freq / sum(freq)
   list(type = "categorical", levels = levels_vec, prob = prob,
-       is_factor = is_factor, is_ordered = is_ordered)
+       is_factor = is_factor, is_ordered = is_ordered,
+       miss_rate = mean(is.na(x)))
 }
 
 #' @noRd
@@ -68,7 +70,8 @@ sample_categorical <- function(n, tr) {
 
 #' @noRd
 fit_boolean_transformer <- function(x) {
-  list(type = "boolean", prob_true = mean(as.logical(x), na.rm = TRUE))
+  list(type = "boolean", prob_true = mean(as.logical(x), na.rm = TRUE),
+       miss_rate = mean(is.na(x)))
 }
 
 #' @noRd
