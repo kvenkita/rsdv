@@ -2,7 +2,7 @@
 title: "Getting Started with rsdv: A Practitioner's Guide to Synthetic Data Generation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with rsdv}
+  %\VignetteIndexEntry{Getting Started with rsdv: A Practitioner's Guide to Synthetic Data Generation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
