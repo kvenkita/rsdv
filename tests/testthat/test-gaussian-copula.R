@@ -74,3 +74,11 @@ test_that("sample() with only categorical columns works", {
   expect_equal(nrow(out), 10L)
   expect_true(all(out$color %in% c("red","blue")))
 })
+
+test_that("sample() respects inequality constraints via rejection sampling", {
+  meta <- small_meta() |>
+    add_constraint(inequality_constraint("age", "income", type = "lt"))
+  syn  <- gaussian_copula_synthesizer(meta) |> fit(small_data())
+  out  <- sample(syn, n = 30)
+  expect_true(all(out$age < out$income))
+})

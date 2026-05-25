@@ -80,20 +80,46 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
 }
 
 #' @export
-sample.gaussian_copula_synthesizer <- function(x, n = 100, ...) {
+sample.gaussian_copula_synthesizer <- function(x, n = 100, max_tries = 100L, ...) {
   if (!is_fitted(x)) stop("Synthesizer must be fitted before calling sample().")
 
+  meta      <- x$metadata
+  collected <- vector("list", max_tries)
+  remaining <- n
+  tries     <- 0L
+
+  while (remaining > 0L && tries < max_tries) {
+    tries  <- tries + 1L
+    batch  <- .sample_raw(x, remaining)
+    valid  <- check_constraints(batch, meta)
+    good   <- batch[valid, , drop = FALSE]
+    if (nrow(good) > 0L) {
+      collected[[tries]] <- good
+      remaining <- remaining - nrow(good)
+    }
+  }
+
+  if (remaining > 0L) {
+    warning(sprintf(
+      "Could not satisfy all constraints after %d tries. Returning %d/%d rows.",
+      max_tries, n - remaining, n
+    ))
+  }
+
+  out <- do.call(rbind, Filter(Negate(is.null), collected))
+  out[seq_len(min(n, nrow(out))), , drop = FALSE]
+}
+
+# Internal: generate n rows without constraint checking
+.sample_raw <- function(x, n) {
   num_cols  <- x$num_cols
   cat_cols  <- x$cat_cols
   bool_cols <- x$bool_cols
   all_cols  <- names(x$metadata$columns)
 
-  # Initialize result as a list to correctly handle mixed column types,
-  # then convert to data.frame at the end.
   result <- vector("list", length(all_cols))
   names(result) <- all_cols
 
-  # --- Numerical columns via copula (or univariate if only 1 col) ---
   if (length(num_cols) >= 2L) {
     u_samples <- copula::rCopula(n, x$copula)
     colnames(u_samples) <- num_cols
@@ -107,8 +133,7 @@ sample.gaussian_copula_synthesizer <- function(x, n = 100, ...) {
     }
   } else if (length(num_cols) == 1L) {
     col  <- num_cols
-    u    <- stats::runif(n)
-    vals <- invert_numerical_transformer(u, x$transformers[[col]])
+    vals <- invert_numerical_transformer(stats::runif(n), x$transformers[[col]])
     if (x$enforce_min_max) {
       tr   <- x$transformers[[col]]
       vals <- pmin(pmax(vals, tr$min), tr$max)
@@ -116,16 +141,11 @@ sample.gaussian_copula_synthesizer <- function(x, n = 100, ...) {
     result[[col]] <- vals
   }
 
-  # --- Categorical columns — independent marginal sampling ---
   for (col in cat_cols) {
     result[[col]] <- sample_categorical(n, x$transformers[[col]])
   }
-
-  # --- Boolean columns ---
   for (col in bool_cols) {
-    result[[col]] <- as.logical(
-      stats::rbinom(n, 1L, x$transformers[[col]]$prob_true)
-    )
+    result[[col]] <- as.logical(stats::rbinom(n, 1L, x$transformers[[col]]$prob_true))
   }
 
   as.data.frame(result, stringsAsFactors = FALSE)
