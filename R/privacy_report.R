@@ -34,6 +34,8 @@ privacy_report <- function(real, synthetic,
   )
 }
 
+#' Print method for rsdv_privacy_report
+#'
 #' @param x An `rsdv_privacy_report` object.
 #' @param ... Unused.
 #' @return `x`, invisibly.
