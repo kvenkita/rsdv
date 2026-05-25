@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 Administrative records, survey microdata, and clinical data share a common problem: the very features that make them analytically valuable — individual-level detail, rare subgroup representation, longitudinal linkage — also make them difficult to share. Data governance procedures, informed consent agreements, and privacy regulations all impose friction between the data and the analyst. Synthetic data generation addresses this problem by learning the statistical structure of a real dataset and using that structure to generate a new dataset whose rows are entirely artificial but whose distributional properties approximate the original.
 
-`rsdv` brings a Gaussian copula–based synthesis workflow to R. The package is designed for the applied researcher who needs to generate a shareable analogue of a sensitive dataset, evaluate how closely the synthetic version preserves the real data's distributions and correlation structure, and quantify the privacy protection the synthesis affords. The workflow follows four steps: describe the column types, fit the synthesizer, generate synthetic rows, and evaluate the result.
+`rsdv` is an R implementation of the [Synthetic Data Vault (SDV)](https://sdv.dev/) framework (Patki, Wedge, and Veeramachaneni 2016), bringing a Gaussian copula–based synthesis workflow to native R. The package is designed for the applied researcher who needs to generate a shareable analogue of a sensitive dataset, evaluate how closely the synthetic version preserves the real data's distributions and correlation structure, and quantify the privacy protection the synthesis affords. The workflow follows four steps: describe the column types, fit the synthesizer, generate synthetic rows, and evaluate the result.
 
 ---
 
@@ -35,7 +35,7 @@ The R ecosystem for synthetic data generation encompasses several methodological
 
 **Rank-based methods.** `synthesizer` (Van der Loo, Statistics Netherlands) synthesises data using empirical rank-based correlation, with a single `rankcor` parameter governing the privacy-utility tradeoff. The approach is fast, handles missing data patterns, and is appropriate for settings where a lightweight baseline synthesis is needed. Quality metrics beyond pMSE are not built in.
 
-**Disclosure control suites.** `sdcMicro` (Templ, Kowarik, and Meindl 2015) is a comprehensive toolkit for statistical disclosure control, covering suppression, perturbation, microaggregation, and synthesis within a unified framework used by national statistical offices globally. Synthesis in `sdcMicro` is one method among many rather than the primary product; the workflow is designed around disclosure risk assessment and perturbation pipelines rather than generative modelling.
+**Disclosure control suites.** `sdcMicro` (Templ, Kowarik, and Meindl 2015) is a comprehensive toolkit for statistical disclosure control, covering suppression, perturbation, microaggregation, and synthesis within a unified framework used by national statistical offices globally. Synthesis in `sdcMicro` is one method among many rather than the primary product; the workflow is designed around disclosure risk assessment and perturbation pipelines rather than generative modeling.
 
 **Copula infrastructure.** The `copula` package (Hofert, Kojadinovic, Mächler, and Yan) is the foundational R library for copula families including Gaussian, t, Clayton, Gumbel, Frank, and Joe. `rsdv` uses `copula` internally for fitting and sampling. Packages such as `heterocop` (Tomilina, Mazo, and Jaffrézic 2024) and `GenOrd` address the methodologically adjacent problem of Gaussian copula estimation for mixed discrete and continuous variables, though oriented toward network inference and simulation respectively.
 
@@ -506,9 +506,9 @@ citation("rsdv")
 
 Hofert, M., Kojadinovic, I., Mächler, M., and Yan, J. (2018). *Elements of Copula Modeling with R*. Springer. (See also: R package `copula`, https://cran.r-project.org/package=copula.)
 
-Nowok, B., Raab, G. M., and Dibben, C. (2016). synthpop: Bespoke creation of synthetic data in R. *Journal of Statistical Software*, 74(11), 1–26. DOI:10.18637/jss.v074.i11.
+Nowok, B., Raab, G. M., and Dibben, C. (2016). synthpop: Bespoke creation of synthetic data in R. *Journal of Statistical Software*, 74(11), 1–26. DOI:10.18637/jss.v074.i11. https://www.jstatsoft.org/article/view/v074i11.
 
-Patki, N., Wedge, R., and Veeramachaneni, K. (2016). The synthetic data vault. *IEEE International Symposium on Data Science and Advanced Analytics (DSAA)*, 399–410. DOI:10.1109/DSAA.2016.49.
+Patki, N., Wedge, R., and Veeramachaneni, K. (2016). The synthetic data vault. *IEEE International Symposium on Data Science and Advanced Analytics (DSAA)*, 399–410. DOI:10.1109/DSAA.2016.49. https://ieeexplore.ieee.org/document/7796926/.
 
 Raab, G. M., Nowok, B., and Dibben, C. (2024). Practical privacy metrics for synthetic data. arXiv:2406.16826. https://arxiv.org/abs/2406.16826.
 
@@ -516,6 +516,6 @@ Sklar, A. (1959). Fonctions de répartition à n dimensions et leurs marges. *Pu
 
 Templ, M., Kowarik, A., and Meindl, B. (2015). Statistical disclosure control for micro-data using the R package sdcMicro. *Journal of Statistical Software*, 67(4), 1–36. DOI:10.18637/jss.v067.i04.
 
-Tomilina, G., Mazo, G., and Jaffrézic, F. (2024). `heterocop`: Gaussian copula-based models for mixed continuous and discrete data (INRAE). *Preprint*.
+Tomilina, G., Mazo, G., and Jaffrézic, F. (2024). A semi-parametric Gaussian copula model for heterogeneous network inference: an application to multi-omics data. HAL preprint hal-04847648. https://hal.inrae.fr/hal-04847648.
 
-Watson, D. S., Blesch, K., Kapar, J., and Wright, M. N. (2023). Adversarial random forests for density estimation and generative modelling. *Proceedings of the 26th International Conference on Artificial Intelligence and Statistics (AISTATS)*, PMLR 206:5357–5375.
+Watson, D. S., Blesch, K., Kapar, J., and Wright, M. N. (2023). Adversarial random forests for density estimation and generative modeling. *Proceedings of the 26th International Conference on Artificial Intelligence and Statistics (AISTATS)*, PMLR 206:5357–5375. https://proceedings.mlr.press/v206/watson23a.html.
