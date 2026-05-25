@@ -44,6 +44,8 @@ detect_column_type <- function(x) {
 #' @param type One of `"numerical"`, `"categorical"`, `"boolean"`,
 #'   `"datetime"`, `"id"`.
 #' @return The updated `rsdv_metadata` object (for piping).
+#' @examples
+#' metadata() |> set_column_type("age", "numerical")
 #' @export
 set_column_type <- function(meta, column, type) {
   if (!type %in% VALID_COLUMN_TYPES) {
@@ -78,6 +80,13 @@ set_primary_key <- function(meta, column) {
   meta
 }
 
+#' Print method for rsdv_metadata
+#'
+#' @param x An `rsdv_metadata` object.
+#' @param ... Unused.
+#' @return `x`, invisibly.
+#' @examples
+#' print(metadata())
 #' @export
 print.rsdv_metadata <- function(x, ...) {
   cat("rsdv Metadata\n")

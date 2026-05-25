@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 `rsdv` generates synthetic tabular data from a real dataset. The three-step
 workflow is: *describe → fit → sample*.
 
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(rsdv)
 
 set.seed(42)

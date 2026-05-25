@@ -20,3 +20,6 @@ The updated \code{rsdv_metadata} object (for piping).
 \description{
 Set the type of a column in metadata
 }
+\examples{
+metadata() |> set_column_type("age", "numerical")
+}

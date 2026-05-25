@@ -15,3 +15,9 @@ An \code{rsdv_metadata} object.
 \description{
 Load metadata from a JSON file
 }
+\examples{
+meta <- metadata() |> set_column_type("age", "numerical")
+tmp  <- tempfile(fileext = ".json")
+save_metadata(meta, tmp)
+load_metadata(tmp)
+}

@@ -15,3 +15,7 @@ An \code{rsdv_metadata} object.
 \description{
 Deserialize metadata from a JSON string
 }
+\examples{
+json <- metadata_to_json(metadata() |> set_column_type("age", "numerical"))
+metadata_from_json(json)
+}

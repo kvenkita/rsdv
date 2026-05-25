@@ -24,6 +24,9 @@ metadata_to_json <- function(meta) {
 #'
 #' @param json A JSON character string produced by [metadata_to_json()].
 #' @return An `rsdv_metadata` object.
+#' @examples
+#' json <- metadata_to_json(metadata() |> set_column_type("age", "numerical"))
+#' metadata_from_json(json)
 #' @export
 metadata_from_json <- function(json) {
   parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
@@ -57,6 +60,11 @@ save_metadata <- function(meta, path) {
 #'
 #' @param path Path to a JSON file produced by [save_metadata()].
 #' @return An `rsdv_metadata` object.
+#' @examples
+#' meta <- metadata() |> set_column_type("age", "numerical")
+#' tmp  <- tempfile(fileext = ".json")
+#' save_metadata(meta, tmp)
+#' load_metadata(tmp)
 #' @export
 load_metadata <- function(path) {
   metadata_from_json(readLines(path, warn = FALSE))

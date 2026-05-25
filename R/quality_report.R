@@ -11,6 +11,7 @@
 #' @return An `rsdv_quality_report` object.
 #' @export
 #' @examples
+#' \donttest{
 #' meta  <- metadata(adult_income) |>
 #'   set_column_type("age", "numerical") |>
 #'   set_column_type("occupation", "categorical")
@@ -18,6 +19,7 @@
 #' synth <- sample(syn, n = 500)
 #' qr    <- quality_report(adult_income, synth, meta)
 #' print(qr)
+#' }
 quality_report <- function(real, synthetic, metadata, target_col = NULL) {
   ks_scores  <- ks_similarity(real, synthetic, metadata)
   tvd_scores <- tvd_similarity(real, synthetic, metadata)

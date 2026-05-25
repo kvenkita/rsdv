@@ -24,6 +24,7 @@ Runs KS similarity, TVD similarity, correlation similarity, and ML
 efficacy, then computes a weighted overall score.
 }
 \examples{
+\donttest{
 meta  <- metadata(adult_income) |>
   set_column_type("age", "numerical") |>
   set_column_type("occupation", "categorical")
@@ -31,4 +32,5 @@ syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 qr    <- quality_report(adult_income, synth, meta)
 print(qr)
+}
 }

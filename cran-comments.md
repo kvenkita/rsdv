@@ -1,6 +1,6 @@
 ## R CMD CHECK results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 note
 
 (The "unable to verify current time" note appears on machines without
 internet access during check; it is not present on CRAN servers.)
