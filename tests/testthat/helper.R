@@ -10,9 +10,10 @@ small_data <- function() {
 }
 
 small_meta <- function() {
-  metadata() |>
+  meta <- metadata() |>
     set_column_type("age", "numerical") |>
     set_column_type("income", "numerical") |>
-    set_column_type("edu", "categorical") |>
-    set_primary_key("age")
+    set_column_type("edu", "categorical")
+  # set_primary_key("age") added in Task 4
+  meta
 }
