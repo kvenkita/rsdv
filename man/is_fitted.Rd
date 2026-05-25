@@ -16,8 +16,6 @@ is_fitted(x)
 Check whether a synthesizer has been fitted
 }
 \examples{
-\dontrun{
 syn <- gaussian_copula_synthesizer(metadata())
-is_fitted(syn)
-}
+is_fitted(syn)  # FALSE before fitting
 }

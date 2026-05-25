@@ -18,10 +18,10 @@ A \code{ggplot} object.
 Plots the NNDR score as a gauge-style bar.
 }
 \examples{
-\dontrun{
+\donttest{
 syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 pr <- privacy_report(adult_income, synth)
-autoplot(pr)
+ggplot2::autoplot(pr)
 }
 }

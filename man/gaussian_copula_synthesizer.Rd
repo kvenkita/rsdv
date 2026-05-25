@@ -20,7 +20,7 @@ Fits a Gaussian copula to the numerical columns and samples categorical
 columns independently from empirical marginals.
 }
 \examples{
-\dontrun{
+\donttest{
 meta <- metadata(adult_income) |>
   set_column_type("age", "numerical") |>
   set_column_type("occupation", "categorical")

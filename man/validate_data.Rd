@@ -18,7 +18,6 @@ Invisibly \code{TRUE}; throws an error if validation fails.
 Checks that all columns registered in \code{meta} are present in \code{data}.
 }
 \examples{
-\dontrun{
-validate_data(adult_income, metadata(adult_income))
-}
+meta <- metadata() |> set_column_type("age", "numerical")
+validate_data(data.frame(age = 1:5), meta)
 }

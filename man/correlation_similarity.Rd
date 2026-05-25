@@ -21,7 +21,9 @@ Computes 1 minus the normalized Frobenius norm of the difference between
 the Pearson correlation matrices of real and synthetic data.
 }
 \examples{
-\dontrun{
+\donttest{
+syn       <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+synth_data <- sample(syn, n = 500)
 correlation_similarity(adult_income, synth_data, metadata(adult_income))
 }
 }

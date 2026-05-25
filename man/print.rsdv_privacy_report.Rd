@@ -18,7 +18,7 @@
 Print method for rsdv_privacy_report
 }
 \examples{
-\dontrun{
+\donttest{
 syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 pr <- privacy_report(adult_income, synth)

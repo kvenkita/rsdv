@@ -20,7 +20,7 @@ A tibble with columns \code{column} (chr) and \code{score} (dbl, 0–1, higher =
 Total variation distance similarity score per categorical column
 }
 \examples{
-\dontrun{
+\donttest{
 syn   <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 tvd_similarity(adult_income, synth, metadata(adult_income))

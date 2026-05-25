@@ -19,3 +19,16 @@ Dispatches to the synthesizer-specific method when \code{x} is an
 \code{rsdv_synthesizer}. For plain R vectors, integers, or characters it
 falls back to \code{\link[base:sample]{base::sample()}}, preserving backward compatibility.
 }
+\examples{
+# Falls back to base::sample for non-synthesizer objects:
+sample(1:10, 3)
+
+\donttest{
+meta  <- metadata(adult_income) |>
+  set_column_type("age",    "numerical") |>
+  set_column_type("income", "categorical")
+syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
+synth <- sample(syn, n = 100)
+head(synth)
+}
+}

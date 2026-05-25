@@ -35,14 +35,14 @@ synth <- sample(syn, n = 500)
 
 ## Evaluating synthetic data quality
 
-```{r}
+```{r, warning=FALSE}
 qr <- quality_report(adult_income, synth, meta)
 print(qr)
 ```
 
 ## Evaluating privacy
 
-```{r}
+```{r, warning=FALSE}
 pr <- privacy_report(adult_income, synth)
 print(pr)
 ```

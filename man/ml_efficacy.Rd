@@ -28,7 +28,10 @@ TSTR / TRTR. A score near 1 means synthetic data is as informative as
 real data for this prediction task.
 }
 \examples{
-\dontrun{
+\donttest{
+meta      <- metadata(adult_income)
+syn       <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
+synth_data <- sample(syn, n = 500)
 ml_efficacy(adult_income, synth_data, meta, target_col = "income")
 }
 }

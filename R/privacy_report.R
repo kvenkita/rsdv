@@ -8,11 +8,13 @@
 #' @return An `rsdv_privacy_report` object.
 #' @export
 #' @examples
+#' \donttest{
 #' syn   <- gaussian_copula_synthesizer(metadata(adult_income)) |>
 #'   fit(adult_income)
 #' synth <- sample(syn, n = 500)
 #' pr    <- privacy_report(adult_income, synth)
 #' print(pr)
+#' }
 privacy_report <- function(real, synthetic,
                             sensitive_col = NULL, known_cols = NULL) {
   nndr_sc <- nndr(real, synthetic)
