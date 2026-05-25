@@ -1,5 +1,5 @@
 
-# rsdv
+# rsdv — The R Synthetic Data Vault
 
 <!-- badges: start -->
 
@@ -7,10 +7,11 @@
 [![Codecov](https://codecov.io/gh/kvenkita/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/kvenkita/rsdv)
 <!-- badges: end -->
 
-**rsdv** generates synthetic tabular data in R using Gaussian copula
-models, with built-in quality and privacy evaluation. It ports the core
-of Python’s [SDV (Synthetic Data Vault)](https://sdv.dev/) library to
-native R.
+**Synthetic data generation in R (Gaussian Copula based, extensible to deep generative models)**
+
+`rsdv` is an R implementation of Python’s [Synthetic Data Vault (SDV)](https://sdv.dev/)
+framework (Patki, Wedge, and Veeramachaneni 2016). It generates synthetic tabular data
+using Gaussian copula models, with built-in quality and privacy evaluation.
 
 ## Installation
 

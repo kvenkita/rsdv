@@ -1,6 +1,6 @@
 Package: rsdv
 Type: Package
-Title: Synthetic Tabular Data Generation
+Title: Synthetic Tabular Data Generation for R
 Version: 0.1.0
 Authors@R:
     person(given = "Kailas",
