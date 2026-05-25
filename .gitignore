@@ -6,3 +6,5 @@
 inst/doc
 /doc/
 /Meta/
+_getting-started_phase*.md
+rsdv-landscape.md

@@ -9,3 +9,5 @@
 ^docs$
 ^test_rsdv\.R$
 ^cran-comments\.md$
+^_getting-started_phase
+^rsdv-landscape\.md$
