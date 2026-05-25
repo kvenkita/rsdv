@@ -3,9 +3,9 @@ Type: Package
 Title: Synthetic Tabular Data Generation
 Version: 0.1.0
 Authors@R:
-    person(given = "TODO",
-           family = "TODO",
-           email = "maintainer@example.com",
+    person(given = "Kailas",
+           family = "Venkitasubramanian",
+           email = "kailasv@gmail.com",
            role = c("aut", "cre"))
 Description: Generates synthetic tabular data from real datasets using
     Gaussian copula models. Provides column-type metadata, constraint

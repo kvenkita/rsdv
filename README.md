@@ -3,8 +3,8 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/yourusername/rsdv/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/yourusername/rsdv/actions)
-[![Codecov](https://codecov.io/gh/yourusername/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/rsdv)
+[![R-CMD-check](https://github.com/kvenkita/rsdv/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/kvenkita/rsdv/actions)
+[![Codecov](https://codecov.io/gh/kvenkita/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/kvenkita/rsdv)
 <!-- badges: end -->
 
 **rsdv** generates synthetic tabular data in R using Gaussian copula
@@ -16,7 +16,7 @@ native R.
 
 ``` r
 # Development version
-remotes::install_github("yourusername/rsdv")
+remotes::install_github("kvenkita/rsdv")
 ```
 
 ## Quick start
