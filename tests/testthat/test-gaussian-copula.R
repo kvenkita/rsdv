@@ -33,3 +33,44 @@ test_that("fit() works with only one numerical column", {
   expect_true(is_fitted(syn))
   expect_null(syn$copula)  # no copula needed for 1 column
 })
+
+test_that("sample() returns a data frame with n rows and correct columns", {
+  syn <- gaussian_copula_synthesizer(small_meta()) |> fit(small_data())
+  out <- sample(syn, n = 20)
+  expect_s3_class(out, "data.frame")
+  expect_equal(nrow(out), 20L)
+  expect_true(all(c("age", "income", "edu") %in% names(out)))
+})
+
+test_that("sample() errors on unfitted synthesizer", {
+  syn <- gaussian_copula_synthesizer(small_meta())
+  expect_error(sample(syn, n = 10), "must be fitted")
+})
+
+test_that("sample() is reproducible with set.seed()", {
+  syn <- gaussian_copula_synthesizer(small_meta()) |> fit(small_data())
+  set.seed(1); out1 <- sample(syn, n = 10)
+  set.seed(1); out2 <- sample(syn, n = 10)
+  expect_equal(out1, out2)
+})
+
+test_that("sample() with enforce_min_max clamps numerical columns", {
+  df  <- small_data()
+  syn <- gaussian_copula_synthesizer(small_meta(), enforce_min_max = TRUE) |>
+    fit(df)
+  out <- sample(syn, n = 200)
+  expect_true(all(out$age    >= min(df$age)    & out$age    <= max(df$age)))
+  expect_true(all(out$income >= min(df$income) & out$income <= max(df$income)))
+})
+
+test_that("sample() with only categorical columns works", {
+  meta <- metadata() |>
+    set_column_type("color", "categorical") |>
+    set_column_type("size", "categorical")
+  df   <- data.frame(color = c("red","blue","red"), size = c("S","M","L"),
+                     stringsAsFactors = FALSE)
+  syn  <- gaussian_copula_synthesizer(meta) |> fit(df)
+  out  <- sample(syn, n = 10)
+  expect_equal(nrow(out), 10L)
+  expect_true(all(out$color %in% c("red","blue")))
+})

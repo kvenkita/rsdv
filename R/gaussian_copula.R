@@ -78,3 +78,55 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
   object$fitted <- TRUE
   object
 }
+
+#' @export
+sample.gaussian_copula_synthesizer <- function(x, n = 100, ...) {
+  if (!is_fitted(x)) stop("Synthesizer must be fitted before calling sample().")
+
+  num_cols  <- x$num_cols
+  cat_cols  <- x$cat_cols
+  bool_cols <- x$bool_cols
+  all_cols  <- names(x$metadata$columns)
+
+  # Initialize result as a list to correctly handle mixed column types,
+  # then convert to data.frame at the end.
+  result <- vector("list", length(all_cols))
+  names(result) <- all_cols
+
+  # --- Numerical columns via copula (or univariate if only 1 col) ---
+  if (length(num_cols) >= 2L) {
+    u_samples <- copula::rCopula(n, x$copula)
+    colnames(u_samples) <- num_cols
+    for (col in num_cols) {
+      vals <- invert_numerical_transformer(u_samples[, col], x$transformers[[col]])
+      if (x$enforce_min_max) {
+        tr   <- x$transformers[[col]]
+        vals <- pmin(pmax(vals, tr$min), tr$max)
+      }
+      result[[col]] <- vals
+    }
+  } else if (length(num_cols) == 1L) {
+    col  <- num_cols
+    u    <- stats::runif(n)
+    vals <- invert_numerical_transformer(u, x$transformers[[col]])
+    if (x$enforce_min_max) {
+      tr   <- x$transformers[[col]]
+      vals <- pmin(pmax(vals, tr$min), tr$max)
+    }
+    result[[col]] <- vals
+  }
+
+  # --- Categorical columns — independent marginal sampling ---
+  for (col in cat_cols) {
+    result[[col]] <- sample_categorical(n, x$transformers[[col]])
+  }
+
+  # --- Boolean columns ---
+  for (col in bool_cols) {
+    result[[col]] <- as.logical(
+      stats::rbinom(n, 1L, x$transformers[[col]]$prob_true)
+    )
+  }
+
+  as.data.frame(result, stringsAsFactors = FALSE)
+}
