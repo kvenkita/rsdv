@@ -56,6 +56,28 @@ set_column_type <- function(meta, column, type) {
   meta
 }
 
+#' Set the primary key column of the metadata
+#'
+#' @param meta An `rsdv_metadata` object.
+#' @param column Name of the primary key column. Must already be registered
+#'   via [set_column_type()].
+#' @return The updated `rsdv_metadata` object (for piping).
+#' @export
+#' @examples
+#' meta <- metadata() |>
+#'   set_column_type("id", "id") |>
+#'   set_primary_key("id")
+set_primary_key <- function(meta, column) {
+  if (!column %in% names(meta$columns)) {
+    stop(sprintf(
+      "Column '%s' not found in metadata. Register it with set_column_type() first.",
+      column
+    ))
+  }
+  meta$primary_key <- column
+  meta
+}
+
 #' @export
 print.rsdv_metadata <- function(x, ...) {
   cat("rsdv Metadata\n")
