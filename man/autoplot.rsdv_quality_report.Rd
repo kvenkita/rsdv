@@ -18,3 +18,11 @@ A \code{ggplot} object.
 Produces a bar chart of per-column similarity scores, with a horizontal
 line at the overall score.
 }
+\examples{
+\dontrun{
+syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+synth <- sample(syn, n = 500)
+qr <- quality_report(adult_income, synth, metadata(adult_income))
+autoplot(qr)
+}
+}

@@ -14,7 +14,7 @@ correlation_similarity(real, synthetic, meta)
 \item{meta}{An \code{rsdv_metadata} object.}
 }
 \value{
-A scalar score in \link{0, 1}; higher = better.
+A scalar score in [0, 1]; higher = better.
 }
 \description{
 Computes 1 minus the normalized Frobenius norm of the difference between

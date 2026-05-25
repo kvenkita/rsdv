@@ -19,22 +19,16 @@ Depends:
     R (>= 4.3.0)
 Imports:
     copula (>= 1.1-0),
-    MASS,
     generics (>= 0.1.3),
     jsonlite (>= 1.8.0),
     ggplot2 (>= 3.4.0),
-    dplyr (>= 1.1.0),
     tibble (>= 3.2.0),
-    rlang (>= 1.1.0),
     FNN (>= 1.1.3),
     rpart (>= 4.1.0),
     scales (>= 1.2.0)
 Suggests:
     testthat (>= 3.0.0),
-    knitr,
-    rmarkdown,
     covr,
     withr
 Config/testthat/edition: 3
-VignetteBuilder: knitr
 LazyData: true

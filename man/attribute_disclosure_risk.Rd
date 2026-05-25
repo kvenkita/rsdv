@@ -16,7 +16,7 @@ attribute_disclosure_risk(real, synthetic, sensitive_col, known_cols, k = 1L)
 \item{k}{Number of nearest neighbors used in inference.}
 }
 \value{
-A scalar in \link{0, 1}; lower = more private.
+A scalar in [0, 1]; lower = more private.
 }
 \description{
 Estimates the fraction of synthetic rows where a sensitive column value

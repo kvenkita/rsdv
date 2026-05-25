@@ -1,3 +1,5 @@
+utils::globalVariables(c("column", "score", "metric"))
+
 #' Plot a quality report
 #'
 #' Produces a bar chart of per-column similarity scores, with a horizontal
@@ -7,6 +9,13 @@
 #' @param ... Unused.
 #' @return A `ggplot` object.
 #' @importFrom ggplot2 autoplot
+#' @examples
+#' \dontrun{
+#' syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+#' synth <- sample(syn, n = 500)
+#' qr <- quality_report(adult_income, synth, metadata(adult_income))
+#' autoplot(qr)
+#' }
 #' @export
 autoplot.rsdv_quality_report <- function(object, ...) {
   scores <- rbind(
@@ -42,6 +51,14 @@ autoplot.rsdv_quality_report <- function(object, ...) {
 #' @param object An `rsdv_privacy_report` object.
 #' @param ... Unused.
 #' @return A `ggplot` object.
+#' @importFrom ggplot2 autoplot
+#' @examples
+#' \dontrun{
+#' syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+#' synth <- sample(syn, n = 500)
+#' pr <- privacy_report(adult_income, synth)
+#' autoplot(pr)
+#' }
 #' @export
 autoplot.rsdv_privacy_report <- function(object, ...) {
   df <- data.frame(

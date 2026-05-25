@@ -6,7 +6,7 @@
 #' specific real row — low disclosure risk. Score = mean(ratio > 0.5).
 #'
 #' @param real,synthetic Data frames with only numerical columns.
-#' @return A scalar score in [0, 1]; higher = more private.
+#' @return A scalar score in \[0, 1\]; higher = more private.
 #' @export
 #' @examples
 #' real <- data.frame(x = rnorm(50), y = rnorm(50))
@@ -38,7 +38,7 @@ nndr <- function(real, synthetic) {
 #' @param sensitive_col Name of the column to protect.
 #' @param known_cols Character vector of columns assumed known to an adversary.
 #' @param k Number of nearest neighbors used in inference.
-#' @return A scalar in [0, 1]; lower = more private.
+#' @return A scalar in \[0, 1\]; lower = more private.
 #' @export
 #' @examples
 #' real <- data.frame(age = sample(20:60, 50, replace = TRUE),

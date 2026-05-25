@@ -10,7 +10,7 @@ nndr(real, synthetic)
 \item{real, synthetic}{Data frames with only numerical columns.}
 }
 \value{
-A scalar score in \link{0, 1}; higher = more private.
+A scalar score in [0, 1]; higher = more private.
 }
 \description{
 For each synthetic row, computes the ratio of its distance to the nearest

@@ -39,6 +39,13 @@ privacy_report <- function(real, synthetic,
 #' @param x An `rsdv_privacy_report` object.
 #' @param ... Unused.
 #' @return `x`, invisibly.
+#' @examples
+#' \dontrun{
+#' syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+#' synth <- sample(syn, n = 500)
+#' pr <- privacy_report(adult_income, synth)
+#' print(pr)
+#' }
 #' @export
 print.rsdv_privacy_report <- function(x, ...) {
   cat("== rsdv Privacy Report ==\n\n")

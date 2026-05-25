@@ -87,7 +87,7 @@ fit_transformers <- function(data, meta) {
       NULL
     )
   })
-  setNames(trs, cols)
+  stats::setNames(trs, cols)
 }
 
 #' Transform columns to intermediate representation

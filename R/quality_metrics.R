@@ -59,7 +59,7 @@ tvd_similarity <- function(real, synthetic, meta) {
 #' @param real A data frame of real data.
 #' @param synthetic A data frame of synthetic data.
 #' @param meta An `rsdv_metadata` object.
-#' @return A scalar score in [0, 1]; higher = better.
+#' @return A scalar score in \[0, 1\]; higher = better.
 #' @export
 #' @examples
 #' \dontrun{
@@ -109,8 +109,8 @@ ml_efficacy <- function(real, synthetic, meta, target_col,
   fit_syn  <- rpart::rpart(formula, data = synthetic,  method = "class")
   fit_real <- rpart::rpart(formula, data = train_real, method = "class")
 
-  pred_syn  <- predict(fit_syn,  newdata = test_real, type = "class")
-  pred_real <- predict(fit_real, newdata = test_real, type = "class")
+  pred_syn  <- stats::predict(fit_syn,  newdata = test_real, type = "class")
+  pred_real <- stats::predict(fit_real, newdata = test_real, type = "class")
 
   acc <- function(pred) mean(pred == test_real[[target_col]])
   tstr  <- acc(pred_syn)
