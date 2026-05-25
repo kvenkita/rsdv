@@ -1,0 +1,44 @@
+# Migrating from synthpop
+
+## Why switch?
+
+`synthpop` excels at disclosure-controlled individual-level microdata
+but lacks joint distribution modeling via copulas. `rsdv` uses a
+Gaussian copula to preserve inter-column correlations.
+
+## Side-by-side comparison
+
+### synthpop workflow
+
+``` r
+library(synthpop)
+synth <- syn(adult_income[, c("age", "occupation", "income")])
+synthetic_data <- synth$syn
+```
+
+### rsdv workflow
+
+``` r
+library(rsdv)
+
+set.seed(42)
+
+meta  <- metadata(adult_income) |>
+  set_column_type("age",        "numerical") |>
+  set_column_type("occupation", "categorical") |>
+  set_column_type("income",     "categorical")
+
+syn   <- gaussian_copula_synthesizer(meta)
+syn   <- fit(syn, adult_income)
+synthetic_data <- sample(syn, n = nrow(adult_income))
+```
+
+## Key differences
+
+| Feature              | synthpop                  | rsdv                                       |
+|----------------------|---------------------------|--------------------------------------------|
+| Correlation modeling | CART-based sequential     | Gaussian copula                            |
+| Column constraints   | Limited                   | Equality, inequality, fixed combos, custom |
+| Quality metrics      | Built-in utility measures | KS, TVD, correlation, ML efficacy          |
+| Privacy metrics      | None                      | NNDR, attribute disclosure risk            |
+| Python interop       | No                        | API-compatible with SDV                    |

@@ -1,0 +1,84 @@
+# Package index
+
+## Metadata
+
+- [`metadata()`](https://kvenkita.github.io/rsdv/reference/metadata.md)
+  : Create a metadata object describing a dataset's column types
+- [`set_column_type()`](https://kvenkita.github.io/rsdv/reference/set_column_type.md)
+  : Set the type of a column in metadata
+- [`set_primary_key()`](https://kvenkita.github.io/rsdv/reference/set_primary_key.md)
+  : Set the primary key column of the metadata
+- [`print(`*`<rsdv_metadata>`*`)`](https://kvenkita.github.io/rsdv/reference/print.rsdv_metadata.md)
+  : Print method for rsdv_metadata
+- [`metadata_to_json()`](https://kvenkita.github.io/rsdv/reference/metadata_to_json.md)
+  : Serialize metadata to a JSON string
+- [`metadata_from_json()`](https://kvenkita.github.io/rsdv/reference/metadata_from_json.md)
+  : Deserialize metadata from a JSON string
+- [`save_metadata()`](https://kvenkita.github.io/rsdv/reference/save_metadata.md)
+  : Save metadata to a JSON file
+- [`load_metadata()`](https://kvenkita.github.io/rsdv/reference/load_metadata.md)
+  : Load metadata from a JSON file
+
+## Constraints
+
+- [`add_constraint()`](https://kvenkita.github.io/rsdv/reference/add_constraint.md)
+  : Add a constraint to metadata
+- [`equality_constraint()`](https://kvenkita.github.io/rsdv/reference/equality_constraint.md)
+  : Constraint: two columns must be equal row-wise
+- [`inequality_constraint()`](https://kvenkita.github.io/rsdv/reference/inequality_constraint.md)
+  : Constraint: col_a must be less than / greater than col_b
+- [`fixed_combinations_constraint()`](https://kvenkita.github.io/rsdv/reference/fixed_combinations_constraint.md)
+  : Constraint: only observed column combinations are valid
+- [`custom_constraint()`](https://kvenkita.github.io/rsdv/reference/custom_constraint.md)
+  : Constraint: arbitrary row-wise predicate
+- [`check_constraint()`](https://kvenkita.github.io/rsdv/reference/check_constraint.md)
+  : Check a single constraint against each row of a data frame
+- [`check_constraints()`](https://kvenkita.github.io/rsdv/reference/check_constraints.md)
+  : Check all constraints in metadata against a data frame
+
+## Synthesizers
+
+- [`gaussian_copula_synthesizer()`](https://kvenkita.github.io/rsdv/reference/gaussian_copula_synthesizer.md)
+  : Create a Gaussian Copula synthesizer
+- [`reexports`](https://kvenkita.github.io/rsdv/reference/reexports.md)
+  [`fit`](https://kvenkita.github.io/rsdv/reference/reexports.md) :
+  Objects exported from other packages
+- [`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) :
+  Sample synthetic rows from a fitted synthesizer
+- [`is_fitted()`](https://kvenkita.github.io/rsdv/reference/is_fitted.md)
+  : Check whether a synthesizer has been fitted
+- [`validate_data()`](https://kvenkita.github.io/rsdv/reference/validate_data.md)
+  : Validate that a data frame is compatible with metadata
+
+## Evaluation
+
+- [`quality_report()`](https://kvenkita.github.io/rsdv/reference/quality_report.md)
+  : Generate a quality report comparing real and synthetic data
+- [`print(`*`<rsdv_quality_report>`*`)`](https://kvenkita.github.io/rsdv/reference/print.rsdv_quality_report.md)
+  : Print method for rsdv_quality_report
+- [`autoplot(`*`<rsdv_quality_report>`*`)`](https://kvenkita.github.io/rsdv/reference/autoplot.rsdv_quality_report.md)
+  : Plot a quality report
+- [`privacy_report()`](https://kvenkita.github.io/rsdv/reference/privacy_report.md)
+  : Generate a privacy report comparing real and synthetic data
+- [`print(`*`<rsdv_privacy_report>`*`)`](https://kvenkita.github.io/rsdv/reference/print.rsdv_privacy_report.md)
+  : Print method for rsdv_privacy_report
+- [`autoplot(`*`<rsdv_privacy_report>`*`)`](https://kvenkita.github.io/rsdv/reference/autoplot.rsdv_privacy_report.md)
+  : Plot a privacy report
+- [`ks_similarity()`](https://kvenkita.github.io/rsdv/reference/ks_similarity.md)
+  : Kolmogorov-Smirnov similarity score per numerical column
+- [`tvd_similarity()`](https://kvenkita.github.io/rsdv/reference/tvd_similarity.md)
+  : Total variation distance similarity score per categorical column
+- [`correlation_similarity()`](https://kvenkita.github.io/rsdv/reference/correlation_similarity.md)
+  : Correlation matrix similarity between real and synthetic numerical
+  data
+- [`ml_efficacy()`](https://kvenkita.github.io/rsdv/reference/ml_efficacy.md)
+  : ML efficacy: train-on-synthetic / test-on-real accuracy ratio (TSTR)
+- [`nndr()`](https://kvenkita.github.io/rsdv/reference/nndr.md) :
+  Nearest-Neighbor Distance Ratio privacy score
+- [`attribute_disclosure_risk()`](https://kvenkita.github.io/rsdv/reference/attribute_disclosure_risk.md)
+  : Attribute disclosure risk
+
+## Data
+
+- [`adult_income`](https://kvenkita.github.io/rsdv/reference/adult_income.md)
+  : Adult Income dataset (500-row sample)
