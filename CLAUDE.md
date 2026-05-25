@@ -14,6 +14,7 @@ No torch dependency — CTGAN/TVAE live in companion package `rsdv.torch`.
 - `ggplot2` for autoplot methods
 - `FNN` for nearest-neighbor privacy metrics
 - `rpart` for ML efficacy metric
+- `MASS` for mvrnorm (multivariate normal sampling in GaussianCopula)
 
 ## Commands
 
