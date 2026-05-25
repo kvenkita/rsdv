@@ -106,7 +106,15 @@ sample.gaussian_copula_synthesizer <- function(x, n = 100, max_tries = 100L, ...
     ))
   }
 
-  out <- do.call(rbind, Filter(Negate(is.null), collected))
+  valid_batches <- Filter(Negate(is.null), collected)
+  if (length(valid_batches) == 0L) {
+    # All tries exhausted with zero valid rows — return a 0-row data frame
+    col_names <- names(x$metadata$columns)
+    empty <- vector("list", length(col_names))
+    names(empty) <- col_names
+    return(as.data.frame(empty, stringsAsFactors = FALSE))
+  }
+  out <- do.call(rbind, valid_batches)
   out[seq_len(min(n, nrow(out))), , drop = FALSE]
 }
 

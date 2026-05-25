@@ -82,3 +82,23 @@ test_that("sample() respects inequality constraints via rejection sampling", {
   out  <- sample(syn, n = 30)
   expect_true(all(out$age < out$income))
 })
+
+test_that("rejection loop fires warning and filters rows when constraint nearly impossible", {
+  # Two columns with identical range force x ≈ y from the copula;
+  # the equality constraint (x == y exactly) almost never holds, triggering
+  # the max_tries warning and exercising the accumulation + filter path.
+  df   <- data.frame(x = as.numeric(1:10), y = as.numeric(1:10))
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("y", "numerical") |>
+    add_constraint(equality_constraint("x", "y"))
+  syn <- gaussian_copula_synthesizer(meta) |> fit(df)
+  # With max_tries = 2 and an exact-equality constraint on continuous data,
+  # we almost certainly cannot collect 50 valid rows.
+  expect_warning(
+    out <- sample(syn, n = 50, max_tries = 2L),
+    "Could not satisfy"
+  )
+  # Whatever rows were returned must satisfy the constraint
+  if (nrow(out) > 0L) expect_true(all(out$x == out$y))
+})
