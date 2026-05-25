@@ -22,5 +22,5 @@
 #'   \item{native_country}{Country of origin (character)}
 #'   \item{income}{Income bracket: `<=50K` or `>50K` (character)}
 #' }
-#' @source \url{https://archive.ics.uci.edu/ml/datasets/adult}
+#' @source <https://archive.ics.uci.edu/dataset/2/adult>
 "adult_income"

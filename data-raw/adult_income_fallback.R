@@ -1,4 +1,6 @@
-# Fallback: create representative synthetic data without downloading
+# DEVELOPER CONVENIENCE ONLY — produces SYNTHETIC stand-in data.
+# The shipped data/adult_income.rda was built from real UCI data via adult_income.R.
+# Use this script only if the UCI download is unavailable.
 set.seed(42)
 n <- 500
 adult_income <- tibble::tibble(
