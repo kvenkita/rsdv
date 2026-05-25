@@ -6,7 +6,7 @@
 #' @return A tibble with columns `column` (chr) and `score` (dbl, 0–1, higher = better).
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' syn   <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 #' synth <- sample(syn, n = 500)
 #' ks_similarity(adult_income, synth, metadata(adult_income))
@@ -31,7 +31,7 @@ ks_similarity <- function(real, synthetic, meta) {
 #' @return A tibble with columns `column` (chr) and `score` (dbl, 0–1, higher = better).
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' syn   <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 #' synth <- sample(syn, n = 500)
 #' tvd_similarity(adult_income, synth, metadata(adult_income))
@@ -62,7 +62,9 @@ tvd_similarity <- function(real, synthetic, meta) {
 #' @return A scalar score in \[0, 1\]; higher = better.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' syn       <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
+#' synth_data <- sample(syn, n = 500)
 #' correlation_similarity(adult_income, synth_data, metadata(adult_income))
 #' }
 correlation_similarity <- function(real, synthetic, meta) {
@@ -94,7 +96,10 @@ correlation_similarity <- function(real, synthetic, meta) {
 #'   `score` (ratio, capped at 1).
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' meta      <- metadata(adult_income)
+#' syn       <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
+#' synth_data <- sample(syn, n = 500)
 #' ml_efficacy(adult_income, synth_data, meta, target_col = "income")
 #' }
 ml_efficacy <- function(real, synthetic, meta, target_col,

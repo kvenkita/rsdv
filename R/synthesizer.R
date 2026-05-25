@@ -14,6 +14,18 @@ generics::fit
 #'   sample size (base::sample path).
 #' @param ... Additional arguments passed to the method or to [base::sample()].
 #' @export
+#' @examples
+#' # Falls back to base::sample for non-synthesizer objects:
+#' sample(1:10, 3)
+#'
+#' \donttest{
+#' meta  <- metadata(adult_income) |>
+#'   set_column_type("age",    "numerical") |>
+#'   set_column_type("income", "categorical")
+#' syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
+#' synth <- sample(syn, n = 100)
+#' head(synth)
+#' }
 sample <- function(x, n = NULL, ...) {
   if (inherits(x, "rsdv_synthesizer")) {
     UseMethod("sample")
@@ -30,10 +42,8 @@ sample <- function(x, n = NULL, ...) {
 #' @return `TRUE` if [fit()] has been called; `FALSE` otherwise.
 #' @export
 #' @examples
-#' \dontrun{
 #' syn <- gaussian_copula_synthesizer(metadata())
-#' is_fitted(syn)
-#' }
+#' is_fitted(syn)  # FALSE before fitting
 is_fitted <- function(x) {
   isTRUE(x$fitted)
 }
@@ -47,9 +57,8 @@ is_fitted <- function(x) {
 #' @return Invisibly `TRUE`; throws an error if validation fails.
 #' @export
 #' @examples
-#' \dontrun{
-#' validate_data(adult_income, metadata(adult_income))
-#' }
+#' meta <- metadata() |> set_column_type("age", "numerical")
+#' validate_data(data.frame(age = 1:5), meta)
 validate_data <- function(data, meta) {
   expected     <- names(meta$columns)
   missing_cols <- setdiff(expected, names(data))

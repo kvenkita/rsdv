@@ -9,7 +9,7 @@
 #' @return An unfitted `gaussian_copula_synthesizer` object.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' meta <- metadata(adult_income) |>
 #'   set_column_type("age", "numerical") |>
 #'   set_column_type("occupation", "categorical")

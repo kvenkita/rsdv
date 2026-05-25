@@ -10,11 +10,11 @@ utils::globalVariables(c("column", "score", "metric"))
 #' @return A `ggplot` object.
 #' @importFrom ggplot2 autoplot
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 #' synth <- sample(syn, n = 500)
 #' qr <- quality_report(adult_income, synth, metadata(adult_income))
-#' autoplot(qr)
+#' ggplot2::autoplot(qr)
 #' }
 #' @export
 autoplot.rsdv_quality_report <- function(object, ...) {
@@ -53,11 +53,11 @@ autoplot.rsdv_quality_report <- function(object, ...) {
 #' @return A `ggplot` object.
 #' @importFrom ggplot2 autoplot
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 #' synth <- sample(syn, n = 500)
 #' pr <- privacy_report(adult_income, synth)
-#' autoplot(pr)
+#' ggplot2::autoplot(pr)
 #' }
 #' @export
 autoplot.rsdv_privacy_report <- function(object, ...) {
