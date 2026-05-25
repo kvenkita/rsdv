@@ -35,6 +35,14 @@ test_that("custom_constraint() applies an arbitrary predicate", {
   expect_equal(valid, c(TRUE, FALSE, TRUE))
 })
 
+test_that("fixed_combinations_constraint() handles numeric columns without coercion", {
+  real_df <- data.frame(x = c(1.0, 2.0), y = c(10L, 20L))
+  c_obj   <- fixed_combinations_constraint(c("x", "y"), real_df)
+  test_df <- data.frame(x = c(1.0, 3.0), y = c(10L, 30L))
+  valid   <- check_constraint(test_df, c_obj)
+  expect_equal(valid, c(TRUE, FALSE))
+})
+
 test_that("check_constraints() returns all-TRUE when no constraints", {
   df   <- small_data()
   meta <- small_meta()

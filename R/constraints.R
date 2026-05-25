@@ -107,12 +107,21 @@ check_constraint.inequality_constraint <- function(data, constraint) {
 
 #' @export
 check_constraint.fixed_combinations_constraint <- function(data, constraint) {
-  test_combos <- data[, constraint$columns, drop = FALSE]
-  apply(test_combos, 1, function(row) {
-    any(apply(constraint$allowed, 1, function(allowed_row) {
-      all(row == allowed_row)
-    }))
-  })
+  # Use paste-based key comparison to preserve column types (avoids apply()
+  # coercing mixed-type data frames to character matrix).
+  sep <- "\031"  # ASCII unit-separator, unlikely in real data
+  test_keys    <- do.call(paste, c(data[, constraint$columns, drop = FALSE],
+                                   list(sep = sep)))
+  allowed_keys <- do.call(paste, c(constraint$allowed, list(sep = sep)))
+  test_keys %in% allowed_keys
+}
+
+#' @export
+check_constraint.default <- function(data, constraint) {
+  stop(sprintf(
+    "No check_constraint method for class '%s'.",
+    paste(class(constraint), collapse = "/")
+  ))
 }
 
 #' @export
