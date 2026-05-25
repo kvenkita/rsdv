@@ -6,23 +6,22 @@
 #' specific real row — low disclosure risk. Score = mean(ratio > 0.5).
 #'
 #' @param real,synthetic Data frames with only numerical columns.
-#' @param k Number of nearest neighbors to use (default 5).
 #' @return A scalar score in [0, 1]; higher = more private.
 #' @export
 #' @examples
 #' real <- data.frame(x = rnorm(50), y = rnorm(50))
 #' syn  <- data.frame(x = rnorm(50), y = rnorm(50))
 #' nndr(real, syn)
-nndr <- function(real, synthetic, k = 5L) {
+nndr <- function(real, synthetic) {
   real_mat <- as.matrix(real[, vapply(real, is.numeric, logical(1)), drop = FALSE])
   syn_mat  <- as.matrix(synthetic[, vapply(synthetic, is.numeric, logical(1)), drop = FALSE])
 
   if (ncol(real_mat) == 0 || ncol(syn_mat) == 0) return(1)
+  if (nrow(real_mat) < 2L) stop("`real` must have at least 2 rows for NNDR computation")
 
-  # Find 2 nearest real neighbors for each synthetic point
   nn_result <- FNN::knnx.dist(data = real_mat, query = syn_mat, k = 2L)
-  d1 <- nn_result[, 1L]  # distance to nearest real row
-  d2 <- nn_result[, 2L]  # distance to second-nearest
+  d1 <- nn_result[, 1L]
+  d2 <- nn_result[, 2L]
 
   # Avoid division by zero: treat ratio as 0 when both distances are 0
   ratio <- ifelse(d2 == 0, 0, d1 / d2)

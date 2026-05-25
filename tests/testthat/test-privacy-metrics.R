@@ -35,3 +35,18 @@ test_that("attribute_disclosure_risk() returns a score in [0, 1]", {
                                      known_cols    = "age")
   expect_true(score >= 0 && score <= 1)
 })
+
+test_that("attribute_disclosure_risk() is high for exact-copy synthetic data", {
+  set.seed(2)
+  n    <- 50
+  real <- data.frame(
+    age    = sample(20:60, n, replace = TRUE),
+    income = sample(c("low", "high"), n, replace = TRUE),
+    stringsAsFactors = FALSE
+  )
+  syn  <- real  # exact copy
+  score <- attribute_disclosure_risk(real, syn,
+                                     sensitive_col = "income",
+                                     known_cols    = "age")
+  expect_gt(score, 0.5)
+})
