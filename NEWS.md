@@ -1,9 +1,22 @@
 # rsdv 0.1.0
 
-* Initial release.
-* Implements `gaussian_copula_synthesizer` for synthetic tabular data generation.
-* Adds quality metrics: `ks_similarity`, `tvd_similarity`, `correlation_similarity`, `ml_efficacy`.
-* Adds privacy metrics: `nndr`, `attribute_disclosure_risk`.
-* Adds `quality_report` and `privacy_report` with `print` and `autoplot` S3 methods.
-* Includes `adult_income` example dataset.
-* Supports metadata column types (numerical, categorical, boolean) and constraint system.
+Initial CRAN release.
+
+## New features
+
+* Gaussian copula synthesizer (`gaussian_copula_synthesizer()`) for generating
+  synthetic tabular data that preserves marginal distributions and inter-column
+  correlations.
+* Column-type metadata system (`metadata()`, `set_column_type()`,
+  `set_primary_key()`) with auto-detection and JSON serialization.
+* Constraint system: equality, inequality, fixed-combinations, and custom
+  row-level predicates (`add_constraint()`, `check_constraints()`).
+* Quality evaluation: KS similarity, TVD similarity, correlation similarity,
+  and ML efficacy (TSTR/TRTR) metrics.
+* Privacy evaluation: nearest-neighbor distance ratio (NNDR) score and
+  attribute disclosure risk.
+* `autoplot()` methods for quality and privacy reports.
+* Missingness modeling: empirical NA rates from training data are reproduced
+  in synthetic output.
+* Bundled dataset: `adult_income` — a 500-row sample of the UCI Adult Income
+  dataset for use in examples and vignettes.
