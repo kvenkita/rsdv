@@ -14,3 +14,4 @@ test_rsdv.R
 dev/
 vignettes/*.html
 vignettes/*_files/
+docs/
