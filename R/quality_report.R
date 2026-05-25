@@ -30,12 +30,12 @@ quality_report <- function(real, synthetic, metadata, target_col = NULL) {
   }
 
   component_scores <- c(
-    mean(ks_scores$score,  na.rm = TRUE),
-    mean(tvd_scores$score, na.rm = TRUE),
+    if (nrow(ks_scores)  > 0L) mean(ks_scores$score,  na.rm = TRUE),
+    if (nrow(tvd_scores) > 0L) mean(tvd_scores$score, na.rm = TRUE),
     cor_score
   )
   if (!is.null(efficacy)) component_scores <- c(component_scores, efficacy$score)
-  overall <- mean(component_scores, na.rm = TRUE)
+  overall <- if (length(component_scores) > 0L) mean(component_scores) else NA_real_
 
   structure(
     list(
@@ -49,6 +49,12 @@ quality_report <- function(real, synthetic, metadata, target_col = NULL) {
   )
 }
 
+#' Print method for rsdv_quality_report
+#'
+#' @param x An `rsdv_quality_report` object.
+#' @param ... Unused.
+#' @return `x`, invisibly.
+#'
 #' @export
 print.rsdv_quality_report <- function(x, ...) {
   cat("== rsdv Quality Report ==\n\n")
