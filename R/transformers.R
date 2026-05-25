@@ -23,9 +23,10 @@ apply_numerical_transformer <- function(x, tr) {
 #' @noRd
 invert_numerical_transformer <- function(u, tr) {
   eps <- 1e-6
-  # Snap epsilon-clamped boundary values back to exact min/max, then
-  # perform the linear inverse to recover the original scale.
-  u_raw <- ifelse(abs(u - eps) < 2 * eps, 0, ifelse(abs(u - (1 - eps)) < 2 * eps, 1, u))
+  # Use exact equality to snap only the specific IEEE-754 values produced by
+  # apply_numerical_transformer's pmax/pmin clamping, avoiding the
+  # false-positive snap of interior points near the boundary.
+  u_raw <- ifelse(u == eps, 0, ifelse(u == (1 - eps), 1, u))
   u_raw * (tr$max - tr$min) + tr$min
 }
 
