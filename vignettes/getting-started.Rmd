@@ -1,0 +1,55 @@
+---
+title: "Getting Started with rsdv"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with rsdv}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+`rsdv` generates synthetic tabular data from a real dataset. The three-step
+workflow is: *describe → fit → sample*.
+
+```{r, message=FALSE}
+library(rsdv)
+
+set.seed(42)
+
+meta <- metadata(adult_income) |>
+  set_column_type("age",    "numerical") |>
+  set_column_type("income", "categorical")
+
+syn   <- gaussian_copula_synthesizer(meta)
+syn   <- fit(syn, adult_income)
+synth <- sample(syn, n = 500)
+```
+
+## Evaluating synthetic data quality
+
+```{r}
+qr <- quality_report(adult_income, synth, meta)
+print(qr)
+```
+
+## Evaluating privacy
+
+```{r}
+pr <- privacy_report(adult_income, synth)
+print(pr)
+```
+
+## Adding constraints
+
+```{r}
+meta2 <- meta |>
+  add_constraint(inequality_constraint("age", "education_num", type = "gt"))
+```

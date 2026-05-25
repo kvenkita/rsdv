@@ -1,0 +1,58 @@
+---
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>")
+```
+
+# rsdv
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/yourusername/rsdv/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/yourusername/rsdv/actions)
+[![Codecov](https://codecov.io/gh/yourusername/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/rsdv)
+<!-- badges: end -->
+
+**rsdv** generates synthetic tabular data in R using Gaussian copula models,
+with built-in quality and privacy evaluation. It ports the core of Python's
+[SDV (Synthetic Data Vault)](https://sdv.dev/) library to native R.
+
+## Installation
+
+```r
+# Development version
+remotes::install_github("yourusername/rsdv")
+```
+
+## Quick start
+
+```{r example}
+library(rsdv)
+
+set.seed(42)
+
+# Describe column types
+meta <- metadata(adult_income) |>
+  set_column_type("age",        "numerical") |>
+  set_column_type("occupation", "categorical") |>
+  set_column_type("income",     "categorical") |>
+  set_primary_key("id")
+
+# Fit a GaussianCopula synthesizer
+syn       <- gaussian_copula_synthesizer(meta)
+syn       <- fit(syn, adult_income)
+
+# Generate 500 synthetic rows
+synth_data <- sample(syn, n = 500)
+
+# Evaluate quality
+qr <- quality_report(real = adult_income, synthetic = synth_data,
+                     metadata = meta)
+print(qr)
+```
+
+## Related work
+
+- Python SDV: [sdv-dev/SDV](https://github.com/sdv-dev/SDV)
+- Synthetic Data Vault paper: Patki et al., IEEE DSAA 2016
+- CTGAN: Xu et al., NeurIPS 2019 (implemented in companion package `rsdv.torch`)

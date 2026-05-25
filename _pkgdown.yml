@@ -1,0 +1,30 @@
+url: https://yourusername.github.io/rsdv
+template:
+  bootstrap: 5
+
+navbar:
+  left:
+    - text: "Reference"
+      href: reference/index.html
+    - text: "Articles"
+      menu:
+        - text: "Getting Started"
+          href: articles/getting-started.html
+        - text: "Migrating from synthpop"
+          href: articles/migrating-from-synthpop.html
+
+reference:
+  - title: "Metadata"
+    contents: [metadata, set_column_type, set_primary_key,
+               metadata_to_json, metadata_from_json, save_metadata, load_metadata]
+  - title: "Constraints"
+    contents: [add_constraint, equality_constraint, inequality_constraint,
+               fixed_combinations_constraint, custom_constraint, check_constraints]
+  - title: "Synthesizers"
+    contents: [gaussian_copula_synthesizer, fit, sample, is_fitted, validate_data]
+  - title: "Evaluation"
+    contents: [quality_report, privacy_report,
+               ks_similarity, tvd_similarity, correlation_similarity, ml_efficacy,
+               nndr, attribute_disclosure_risk]
+  - title: "Data"
+    contents: [adult_income]
