@@ -6,6 +6,7 @@
 ^CLAUDE\.md$
 ^README\.Rmd$
 ^_pkgdown\.yml$
+^pkgdown$
 ^docs$
 ^dev$
 ^test_rsdv\.R$

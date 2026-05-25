@@ -1,6 +1,12 @@
 url: https://kvenkita.github.io/rsdv
 template:
   bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#2171b5"
+    link-color: "#2171b5"
+    code-color: "#c0392b"
+    code-bg: "#f6f9fc"
 
 navbar:
   left:
