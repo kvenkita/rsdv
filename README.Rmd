@@ -26,7 +26,7 @@ remotes::install_github("kvenkita/rsdv")
 
 ## Quick start
 
-```{r example}
+```{r example, warning=FALSE}
 library(rsdv)
 
 set.seed(42)
@@ -49,6 +49,23 @@ synth_data <- sample(syn, n = 500)
 qr <- quality_report(real = adult_income, synthetic = synth_data,
                      metadata = meta)
 print(qr)
+```
+
+`quality_report()` aggregates metrics into the two-property hierarchy used by
+SDMetrics — **Column Shapes** (per-column marginal fidelity) and **Column Pair
+Trends** (correlation similarity for numerical pairs, contingency similarity
+for categorical pairs) — with the overall score the mean of the two.
+
+`diagnostic_report()` complements it with structural-validity checks (value
+ranges, category adherence, key uniqueness), and `sample_conditions()`
+generates rows that hold given categorical values fixed:
+
+```{r conditional, eval=FALSE}
+# Validity checks
+diagnostic_report(adult_income, synth_data, meta)
+
+# Conditional generation
+sample_conditions(syn, data.frame(income = ">50K", .n = 20))
 ```
 
 ## Related work
