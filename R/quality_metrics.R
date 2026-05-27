@@ -51,15 +51,18 @@ tvd_similarity <- function(real, synthetic, meta) {
   )
 }
 
-#' Correlation matrix similarity between real and synthetic numerical data
+#' Correlation similarity between real and synthetic numerical column pairs
 #'
-#' Computes 1 minus the normalized Frobenius norm of the difference between
-#' the Pearson correlation matrices of real and synthetic data.
+#' For each pair of numerical columns, computes `1 - |corr_real - corr_syn| / 2`
+#' (the SDMetrics `CorrelationSimilarity` score), where `corr` is the Pearson
+#' correlation. Returns one row per pair plus the mean.
 #'
 #' @param real A data frame of real data.
 #' @param synthetic A data frame of synthetic data.
 #' @param meta An `rsdv_metadata` object.
-#' @return A scalar score in \[0, 1\]; higher = better.
+#' @return A list with `pairs` (a tibble of `column_1`, `column_2`, `score`) and
+#'   `score` (the mean over pairs; `1` when there are fewer than two numerical
+#'   columns).
 #' @export
 #' @examples
 #' \donttest{
@@ -69,15 +72,76 @@ tvd_similarity <- function(real, synthetic, meta) {
 #' }
 correlation_similarity <- function(real, synthetic, meta) {
   num_cols <- get_columns_by_type(meta, "numerical")
-  if (length(num_cols) < 2L) return(1)
+  empty    <- tibble::tibble(column_1 = character(), column_2 = character(),
+                             score = double())
+  if (length(num_cols) < 2L) return(list(pairs = empty, score = 1))
+
   cor_real <- stats::cor(real[, num_cols, drop = FALSE],
                          use = "pairwise.complete.obs")
   cor_syn  <- stats::cor(synthetic[, num_cols, drop = FALSE],
                          use = "pairwise.complete.obs")
-  p        <- length(num_cols)
-  max_diff <- sqrt(p * (p - 1L) * 4)  # off-diagonals bounded by [-2, 2]
-  diff_frob <- norm(cor_real - cor_syn, type = "F")
-  max(0, 1 - diff_frob / max_diff)
+
+  combos <- utils::combn(num_cols, 2L)
+  rows   <- lapply(seq_len(ncol(combos)), function(j) {
+    a <- combos[1L, j]; b <- combos[2L, j]
+    # |r_real - r_syn| ranges over [0, 2]; halving maps the score to [0, 1].
+    s <- 1 - abs(cor_real[a, b] - cor_syn[a, b]) / 2
+    list(column_1 = a, column_2 = b, score = s)
+  })
+  pairs <- tibble::tibble(
+    column_1 = vapply(rows, `[[`, character(1L), "column_1"),
+    column_2 = vapply(rows, `[[`, character(1L), "column_2"),
+    score    = vapply(rows, `[[`, double(1L),    "score")
+  )
+  list(pairs = pairs, score = mean(pairs$score, na.rm = TRUE))
+}
+
+#' Contingency similarity between real and synthetic categorical column pairs
+#'
+#' For each pair of categorical columns, compares the joint (normalized
+#' contingency) distributions of real and synthetic data via total variation
+#' distance, scoring `1 - TVD` (the SDMetrics `ContingencySimilarity` score).
+#' This is the categorical analogue of correlation similarity and captures
+#' categorical-vs-categorical dependence.
+#'
+#' @param real A data frame of real data.
+#' @param synthetic A data frame of synthetic data.
+#' @param meta An `rsdv_metadata` object.
+#' @return A list with `pairs` (a tibble of `column_1`, `column_2`, `score`) and
+#'   `score` (the mean over pairs; `1` when there are fewer than two categorical
+#'   columns).
+#' @export
+#' @examples
+#' \donttest{
+#' meta  <- metadata(adult_income)
+#' syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
+#' synth <- sample(syn, n = 500)
+#' contingency_similarity(adult_income, synth, meta)
+#' }
+contingency_similarity <- function(real, synthetic, meta) {
+  cat_cols <- get_columns_by_type(meta, "categorical")
+  empty    <- tibble::tibble(column_1 = character(), column_2 = character(),
+                             score = double())
+  if (length(cat_cols) < 2L) return(list(pairs = empty, score = 1))
+
+  combos <- utils::combn(cat_cols, 2L)
+  rows   <- lapply(seq_len(ncol(combos)), function(j) {
+    a <- combos[1L, j]; b <- combos[2L, j]
+    lev_a <- union(unique(real[[a]]), unique(synthetic[[a]]))
+    lev_b <- union(unique(real[[b]]), unique(synthetic[[b]]))
+    p_real <- table(factor(real[[a]],      levels = lev_a),
+                    factor(real[[b]],      levels = lev_b)) / nrow(real)
+    p_syn  <- table(factor(synthetic[[a]], levels = lev_a),
+                    factor(synthetic[[b]], levels = lev_b)) / nrow(synthetic)
+    tvd <- 0.5 * sum(abs(as.numeric(p_real) - as.numeric(p_syn)))
+    list(column_1 = a, column_2 = b, score = 1 - tvd)
+  })
+  pairs <- tibble::tibble(
+    column_1 = vapply(rows, `[[`, character(1L), "column_1"),
+    column_2 = vapply(rows, `[[`, character(1L), "column_2"),
+    score    = vapply(rows, `[[`, double(1L),    "score")
+  )
+  list(pairs = pairs, score = mean(pairs$score, na.rm = TRUE))
 }
 
 #' ML efficacy: train-on-synthetic / test-on-real accuracy ratio (TSTR)

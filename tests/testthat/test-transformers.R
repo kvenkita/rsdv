@@ -101,3 +101,50 @@ test_that("apply_transformers() + invert_transformers() round-trips numerical co
   expect_equal(df2$age,    df$age,    tolerance = 1e-6)
   expect_equal(df2$income, df$income, tolerance = 1e-6)
 })
+
+# Parametric marginals -------------------------------------------------------
+
+test_that("fit_numerical_transformer() selects a supported family", {
+  set.seed(1)
+  tr <- fit_numerical_transformer(rnorm(500))
+  expect_true(tr$dist %in% c("norm", "beta", "gamma", "truncnorm", "uniform"))
+})
+
+test_that("fit_numerical_transformer() honors an explicit distribution", {
+  set.seed(1)
+  tr <- fit_numerical_transformer(rnorm(200), distribution = "norm")
+  expect_equal(tr$dist, "norm")
+})
+
+test_that("explicit infeasible distribution warns and falls back to uniform", {
+  # gamma requires strictly positive support; data spans zero.
+  expect_warning(
+    tr <- fit_numerical_transformer(c(-3, -1, 0, 2, 4), distribution = "gamma"),
+    "could not be fit"
+  )
+  expect_equal(tr$dist, "uniform")
+})
+
+test_that("apply/invert numerical round-trips interior values", {
+  set.seed(2)
+  x  <- rnorm(100, 10, 3)
+  tr <- fit_numerical_transformer(x, distribution = "norm")
+  u  <- apply_numerical_transformer(x, tr)
+  expect_true(all(u > 0 & u < 1))
+  expect_equal(invert_numerical_transformer(u, tr), x, tolerance = 1e-6)
+})
+
+test_that("constant numerical column maps to 0.5 and a constant fit", {
+  tr <- fit_numerical_transformer(c(5, 5, 5))
+  expect_equal(tr$dist, "constant")
+  expect_true(all(apply_numerical_transformer(c(5, 5, 5), tr) == 0.5))
+})
+
+test_that("categorical encode/decode recovers the dominant level", {
+  tr <- fit_categorical_transformer(c(rep("A", 80), rep("B", 20)))
+  # Values drawn from the largest interval decode to the largest category.
+  expect_equal(decode_categorical_u(0.5, tr), "A")
+  expect_equal(decode_categorical_u(0.95, tr), "B")
+  u <- encode_categorical_u(rep("A", 100), tr)
+  expect_true(all(u >= 0 & u <= tr$breaks[2]))
+})

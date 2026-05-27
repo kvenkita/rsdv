@@ -38,24 +38,50 @@ test_that("tvd_similarity() scores degraded distribution lower", {
 
 # Task 12: Correlation similarity and ML efficacy
 
-test_that("correlation_similarity() returns a scalar in [0,1]", {
+test_that("correlation_similarity() returns per-pair scores and a mean in [0,1]", {
   set.seed(42)
   real <- data.frame(x = rnorm(100), y = rnorm(100))
   syn  <- data.frame(x = rnorm(100), y = rnorm(100))
   meta <- metadata() |>
     set_column_type("x", "numerical") |>
     set_column_type("y", "numerical")
-  score <- correlation_similarity(real, syn, meta)
-  expect_length(score, 1L)
-  expect_true(score >= 0 && score <= 1)
+  res <- correlation_similarity(real, syn, meta)
+  expect_true(all(c("pairs", "score") %in% names(res)))
+  expect_true(all(c("column_1", "column_2", "score") %in% names(res$pairs)))
+  expect_equal(nrow(res$pairs), 1L)
+  expect_true(res$score >= 0 && res$score <= 1)
 })
 
-test_that("correlation_similarity() returns 1 for identical data", {
+test_that("correlation_similarity() scores 1 for identical data", {
   real <- data.frame(x = 1:20, y = 1:20)
   meta <- metadata() |>
     set_column_type("x", "numerical") |>
     set_column_type("y", "numerical")
-  expect_equal(correlation_similarity(real, real, meta), 1, tolerance = 1e-9)
+  expect_equal(correlation_similarity(real, real, meta)$score, 1, tolerance = 1e-9)
+})
+
+test_that("contingency_similarity() scores 1 for identical data, lower when degraded", {
+  set.seed(7)
+  real <- data.frame(
+    a = sample(c("p", "q"), 200, TRUE),
+    b = sample(c("x", "y"), 200, TRUE),
+    stringsAsFactors = FALSE
+  )
+  meta <- metadata() |>
+    set_column_type("a", "categorical") |>
+    set_column_type("b", "categorical")
+  expect_equal(contingency_similarity(real, real, meta)$score, 1, tolerance = 1e-9)
+
+  # Swap one column to destroy the joint distribution.
+  bad <- data.frame(a = rev(real$a), b = real$b, stringsAsFactors = FALSE)
+  bad$a <- ifelse(real$a == "p", "q", "p")
+  expect_lt(contingency_similarity(real, bad, meta)$score, 1)
+})
+
+test_that("contingency_similarity() returns 1 with fewer than two categorical cols", {
+  meta <- metadata() |> set_column_type("a", "categorical")
+  df   <- data.frame(a = c("x", "y", "x"), stringsAsFactors = FALSE)
+  expect_equal(contingency_similarity(df, df, meta)$score, 1)
 })
 
 test_that("ml_efficacy() returns list with tstr, trtr, score in [0,1]", {
