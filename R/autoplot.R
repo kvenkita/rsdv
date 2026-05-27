@@ -1,4 +1,4 @@
-utils::globalVariables(c("column", "score", "metric"))
+utils::globalVariables(c("column", "score", "metric", "check"))
 
 #' Plot a quality report
 #'

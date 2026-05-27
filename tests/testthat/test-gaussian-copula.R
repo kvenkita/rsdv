@@ -18,12 +18,12 @@ test_that("fit() errors when data is missing required columns", {
   expect_error(fit(syn, bad), "Missing columns")
 })
 
-test_that("fit() stores a correlation matrix for 2+ numerical columns", {
+test_that("fit() stores a correlation matrix over all modeled columns", {
   syn <- gaussian_copula_synthesizer(small_meta())
   syn <- fit(syn, small_data())
-  # small_meta has 2 numerical cols: age + income
-  expect_equal(dim(syn$cor_matrix), c(2L, 2L))
-  expect_equal(rownames(syn$cor_matrix), c("age", "income"))
+  # All modeled columns enter the copula: age + income (numerical) + edu (categorical)
+  expect_equal(dim(syn$cor_matrix), c(3L, 3L))
+  expect_equal(rownames(syn$cor_matrix), c("age", "income", "edu"))
 })
 
 test_that("fit() works with only one numerical column", {
@@ -101,4 +101,21 @@ test_that("rejection loop fires warning and filters rows when constraint nearly 
   )
   # Whatever rows were returned must satisfy the constraint
   if (nrow(out) > 0L) expect_true(all(out$x == out$y))
+})
+
+test_that("synthesizer preserves numeric<->categorical dependence", {
+  set.seed(123)
+  n  <- 800
+  # Strong dependence: group "high" has much larger x than group "low".
+  grp <- sample(c("low", "high"), n, TRUE)
+  x   <- ifelse(grp == "high", rnorm(n, 100, 5), rnorm(n, 10, 5))
+  df  <- data.frame(x = x, grp = grp, stringsAsFactors = FALSE)
+  meta <- metadata(df)
+  syn  <- gaussian_copula_synthesizer(meta) |> fit(df)
+  out  <- sample(syn, n = 800)
+
+  real_gap <- mean(df$x[df$grp == "high"])  - mean(df$x[df$grp == "low"])
+  syn_gap  <- mean(out$x[out$grp == "high"]) - mean(out$x[out$grp == "low"])
+  # The group separation must survive (independent sampling would give ~0 gap).
+  expect_gt(syn_gap, 0.5 * real_gap)
 })

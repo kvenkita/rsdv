@@ -2,7 +2,7 @@
 % Please edit documentation in R/quality_metrics.R
 \name{correlation_similarity}
 \alias{correlation_similarity}
-\title{Correlation matrix similarity between real and synthetic numerical data}
+\title{Correlation similarity between real and synthetic numerical column pairs}
 \usage{
 correlation_similarity(real, synthetic, meta)
 }
@@ -14,11 +14,14 @@ correlation_similarity(real, synthetic, meta)
 \item{meta}{An \code{rsdv_metadata} object.}
 }
 \value{
-A scalar score in [0, 1]; higher = better.
+A list with \code{pairs} (a tibble of \code{column_1}, \code{column_2}, \code{score}) and
+\code{score} (the mean over pairs; \code{1} when there are fewer than two numerical
+columns).
 }
 \description{
-Computes 1 minus the normalized Frobenius norm of the difference between
-the Pearson correlation matrices of real and synthetic data.
+For each pair of numerical columns, computes \verb{1 - |corr_real - corr_syn| / 2}
+(the SDMetrics \code{CorrelationSimilarity} score), where \code{corr} is the Pearson
+correlation. Returns one row per pair plus the mean.
 }
 \examples{
 \donttest{

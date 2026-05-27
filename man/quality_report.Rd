@@ -14,14 +14,26 @@ quality_report(real, synthetic, metadata, target_col = NULL)
 \item{metadata}{An \code{rsdv_metadata} object.}
 
 \item{target_col}{Optional. Name of a categorical column for ML efficacy.
-If \code{NULL}, ML efficacy is omitted from the overall score.}
+Reported alongside the score but excluded from the overall.}
 }
 \value{
 An \code{rsdv_quality_report} object.
 }
 \description{
-Runs KS similarity, TVD similarity, correlation similarity, and ML
-efficacy, then computes a weighted overall score.
+Aggregates metrics into the two-property hierarchy used by SDMetrics:
+}
+\details{
+\itemize{
+\item \strong{Column Shapes} — per-column marginal fidelity: KS similarity for
+numerical columns and TVD similarity for categorical columns.
+\item \strong{Column Pair Trends} — pairwise dependence: correlation similarity for
+numerical pairs and contingency similarity for categorical pairs.
+}
+
+The overall score is the mean of the two property scores, so a table with
+many categorical columns and few numerical ones is not weighted by raw column
+counts. ML efficacy, when requested, is reported separately and does \strong{not}
+enter the overall score (matching SDMetrics).
 }
 \examples{
 \donttest{

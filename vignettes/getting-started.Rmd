@@ -60,7 +60,7 @@ A copula is a joint distribution that separates the behaviour of each individual
 
 The Gaussian copula models dependence through a correlation matrix. The synthesis pipeline has five stages:
 
-**1. Transform to uniform.** Each observed numerical value is mapped to the interval (0, 1) using a min-max transform: *u = (x − x_min) / (x_max − x_min)*. The endpoints are clamped slightly away from 0 and 1 to prevent infinite values in the next step.
+**1. Transform to uniform.** Each numerical value is mapped to the interval (0, 1) through its fitted marginal CDF (the probability integral transform). `rsdv` fits a parametric family per column — `norm`, `beta`, `gamma`, `truncnorm`, or `uniform` — and by default (`default_distribution = "auto"`) selects the best-fitting family by Kolmogorov-Smirnov distance. You can override the choice per column via `numerical_distributions`. Categorical and boolean columns are mapped to (0, 1) by their cumulative-frequency intervals (each value is placed uniformly at random within its category's interval), so they enter the copula too.
 
 **2. Map to normal space.** The uniform values are passed through the standard normal quantile function (Φ⁻¹), yielding pseudo-observations on the real line.
 
@@ -68,9 +68,9 @@ The Gaussian copula models dependence through a correlation matrix. The synthesi
 
 **4. Sample.** New pseudo-observations are drawn from the fitted multivariate normal distribution.
 
-**5. Back-transform.** The sampled normal values are mapped back to uniform via Φ, then rescaled to the original range.
+**5. Back-transform.** Numerical columns are mapped back through their fitted quantile function; categorical and boolean columns are decoded by locating which frequency interval each sampled value falls into.
 
-Mixed variable types are handled outside the copula. Categorical columns are sampled independently from their empirical marginal distribution, preserving observed level frequencies. Boolean columns are sampled from a Bernoulli distribution with the observed probability of `TRUE`.
+Because every column — numerical, categorical, and boolean — is embedded in a single copula, cross-column dependence is preserved across types: numeric-vs-categorical and categorical-vs-categorical associations, not just numeric-vs-numeric correlations.
 
 Missing values are handled by fitting the copula on complete cases only. By default, `rsdv` records the empirical missingness rate for each column during fitting and reinstates it at sampling time. This approach models missingness as missing completely at random (MCAR). Systematic missingness patterns require pre-imputation before synthesis; see the section on missing data below.
 
@@ -131,8 +131,8 @@ print(meta)
 | Type | Description | Example columns |
 |---|---|---|
 | `"numerical"` | Continuous or discrete numeric; modelled through the copula | Age, income, test scores |
-| `"categorical"` | Nominal or ordinal text or factor; sampled from empirical marginal | Occupation, education level |
-| `"boolean"` | `TRUE`/`FALSE`; sampled from empirical Bernoulli probability | Flag variables, binary outcomes |
+| `"categorical"` | Nominal or ordinal text or factor; embedded in the copula via cumulative-frequency intervals | Occupation, education level |
+| `"boolean"` | `TRUE`/`FALSE`; embedded in the copula as a two-level categorical | Flag variables, binary outcomes |
 | `"id"` | Row identifier; excluded from synthesis | Record IDs |
 | `"datetime"` | Date or timestamp; excluded from synthesis | Survey date |
 
@@ -150,7 +150,7 @@ syn   <- fit(syn, adult_income)
 synth <- sample(syn, n = 500)
 ```
 
-The result is a data frame with 500 rows and the same six columns as `adult_income`. The `fit()` call estimates one transformer per registered column and, for numerical columns, fits the Gaussian copula correlation matrix on complete cases. The `sample()` call generates `n` synthetic rows by drawing from the fitted copula and back-transforming each column through its estimated marginal.
+The result is a data frame with 500 rows and the same six columns as `adult_income`. The `fit()` call estimates one transformer per registered column and fits the Gaussian copula correlation matrix over all modeled columns (numerical, categorical, and boolean) on complete cases. The `sample()` call generates `n` synthetic rows by drawing from the fitted copula and back-transforming each column through its estimated marginal.
 
 ---
 
@@ -477,7 +477,7 @@ The `missRanger` package provides a fast random forest–based alternative suita
 
 The Gaussian copula assumes elliptical (roughly symmetric) dependence. It will underrepresent tail dependence — situations where extreme values in one variable coincide with extreme values in another, which is common in financial returns, insurance claims, and natural disaster data. For heavy-tailed dependence structures, a t-copula or vine copula extension is more appropriate.
 
-The current implementation samples categorical columns independently from their marginal distributions. Associations between two categorical columns — for example, between occupation and education level — are not preserved. Researchers for whom these associations are substantively important should treat the TVD scores carefully and consider whether the synthesis is fit for their purpose.
+Categorical and boolean columns are embedded in the copula via their cumulative-frequency intervals, so associations between categorical columns — and between categorical and numerical columns — are preserved. Because the embedding is rank-based and the latent dependence is Gaussian, very fine-grained or strongly non-monotone categorical associations may be modeled only approximately; the `contingency_similarity()` metric reports how well categorical pair associations are reproduced.
 
 Synthesis reduces re-identification risk but does not eliminate it. The NNDR and attribute disclosure risk metrics in `rsdv` provide quantitative estimates of residual risk. Use the built-in privacy report as a starting point, and consult your institution's data governance office for a formal privacy impact assessment in regulated environments.
 

@@ -28,7 +28,8 @@ Imports:
     FNN (>= 1.1.3),
     rpart (>= 4.1.0),
     scales (>= 1.2.0),
-    stats
+    stats,
+    utils
 Suggests:
     testthat (>= 3.0.0),
     covr,
