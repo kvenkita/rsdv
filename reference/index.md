@@ -45,6 +45,9 @@
   Objects exported from other packages
 - [`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) :
   Sample synthetic rows from a fitted synthesizer
+- [`sample_conditions()`](https://kvenkita.github.io/rsdv/reference/sample_conditions.md)
+  : Sample synthetic rows that match fixed column values (conditional
+  sampling)
 - [`is_fitted()`](https://kvenkita.github.io/rsdv/reference/is_fitted.md)
   : Check whether a synthesizer has been fitted
 - [`validate_data()`](https://kvenkita.github.io/rsdv/reference/validate_data.md)
@@ -58,6 +61,12 @@
   : Print method for rsdv_quality_report
 - [`autoplot(`*`<rsdv_quality_report>`*`)`](https://kvenkita.github.io/rsdv/reference/autoplot.rsdv_quality_report.md)
   : Plot a quality report
+- [`diagnostic_report()`](https://kvenkita.github.io/rsdv/reference/diagnostic_report.md)
+  : Generate a diagnostic (validity) report for synthetic data
+- [`print(`*`<rsdv_diagnostic_report>`*`)`](https://kvenkita.github.io/rsdv/reference/print.rsdv_diagnostic_report.md)
+  : Print method for rsdv_diagnostic_report
+- [`autoplot(`*`<rsdv_diagnostic_report>`*`)`](https://kvenkita.github.io/rsdv/reference/autoplot.rsdv_diagnostic_report.md)
+  : Plot a diagnostic report
 - [`privacy_report()`](https://kvenkita.github.io/rsdv/reference/privacy_report.md)
   : Generate a privacy report comparing real and synthetic data
 - [`print(`*`<rsdv_privacy_report>`*`)`](https://kvenkita.github.io/rsdv/reference/print.rsdv_privacy_report.md)
@@ -69,8 +78,11 @@
 - [`tvd_similarity()`](https://kvenkita.github.io/rsdv/reference/tvd_similarity.md)
   : Total variation distance similarity score per categorical column
 - [`correlation_similarity()`](https://kvenkita.github.io/rsdv/reference/correlation_similarity.md)
-  : Correlation matrix similarity between real and synthetic numerical
-  data
+  : Correlation similarity between real and synthetic numerical column
+  pairs
+- [`contingency_similarity()`](https://kvenkita.github.io/rsdv/reference/contingency_similarity.md)
+  : Contingency similarity between real and synthetic categorical column
+  pairs
 - [`ml_efficacy()`](https://kvenkita.github.io/rsdv/reference/ml_efficacy.md)
   : ML efficacy: train-on-synthetic / test-on-real accuracy ratio (TSTR)
 - [`nndr()`](https://kvenkita.github.io/rsdv/reference/nndr.md) :

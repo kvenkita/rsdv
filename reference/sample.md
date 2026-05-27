@@ -33,7 +33,7 @@ sample(x, n = NULL, ...)
 ``` r
 # Falls back to base::sample for non-synthesizer objects:
 sample(1:10, 3)
-#> [1] 2 6 8
+#> [1] 1 3 6
 
 # \donttest{
 meta  <- metadata(adult_income) |>
@@ -42,26 +42,26 @@ meta  <- metadata(adult_income) |>
 syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth <- sample(syn, n = 100)
 head(synth)
-#>           id      age        workclass     fnlwgt    education education_num
-#> 1 254.688509 69.20714        Local-gov 1205107.28 Some-college      5.432897
-#> 2 484.677518 70.29259          Private  832026.75      HS-grad      6.339311
-#> 3 190.119016 78.15592 Self-emp-not-inc  331122.48    Assoc-voc     14.030534
-#> 4 158.907900 17.08895          Private  853314.93      HS-grad      1.089733
-#> 5   3.549389 25.35576          Private   96612.11 Some-college     11.630921
-#> 6 272.118523 53.08531          Private  696779.40 Some-college      2.917459
-#>       marital_status      occupation  relationship  race    sex capital_gain
-#> 1 Married-civ-spouse Exec-managerial       Husband White   Male     784.1551
-#> 2      Never-married  Prof-specialty     Unmarried White Female    3087.2572
-#> 3      Never-married    Craft-repair Not-in-family White   Male    8978.0378
-#> 4 Married-civ-spouse  Prof-specialty     Own-child White   Male    1222.8088
-#> 5      Never-married  Prof-specialty     Own-child White   Male    6813.8550
-#> 6 Married-civ-spouse   Other-service Not-in-family White   Male    9155.4665
+#>         id      age workclass    fnlwgt    education education_num
+#> 1 496.1005 22.63580   Private 244277.33      HS-grad      9.402237
+#> 2 151.7045 52.34715   Private 253542.40      HS-grad     11.311088
+#> 3  42.4010 39.55661      <NA> 519520.69 Some-college      6.377475
+#> 4 324.3207 60.55661 Local-gov 181866.18    Bachelors     11.438681
+#> 5 449.4966 20.84860   Private 127803.23      HS-grad      7.604183
+#> 6 186.6424 40.96523   Private  92935.35 Some-college      8.565641
+#>       marital_status        occupation  relationship  race    sex capital_gain
+#> 1      Never-married Machine-op-inspct          Wife White   Male        0.000
+#> 2 Married-civ-spouse   Protective-serv       Husband White   Male     1788.196
+#> 3 Married-civ-spouse   Exec-managerial       Husband Black   Male        0.000
+#> 4 Married-civ-spouse   Protective-serv Not-in-family White Female      860.563
+#> 5      Never-married      Craft-repair          Wife White Female        0.000
+#> 6      Never-married      Craft-repair       Husband White Female      738.085
 #>   capital_loss hours_per_week native_country income
-#> 1   1707.77807      58.174168  United-States  <=50K
-#> 2    510.70166      95.413253  United-States  <=50K
-#> 3    338.45074      85.025089         Mexico   >50K
-#> 4     79.80332       4.695981  United-States  <=50K
-#> 5    553.29310      85.796827  United-States  <=50K
-#> 6    273.84578       4.816079  United-States  <=50K
+#> 1        0.000       45.43182  United-States   >50K
+#> 2        0.000       26.79922  United-States  <=50K
+#> 3        0.000       46.09208  United-States  <=50K
+#> 4     1001.675       65.98557  United-States   >50K
+#> 5        0.000       15.74493  United-States  <=50K
+#> 6      186.460       40.37035  United-States  <=50K
 # }
 ```

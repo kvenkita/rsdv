@@ -174,10 +174,17 @@ dependence structure from data and then recombine it with estimated or
 empirical marginal distributions to generate new observations.</p>
 <p>The Gaussian copula models dependence through a correlation matrix.
 The synthesis pipeline has five stages:</p>
-<p><strong>1. Transform to uniform.</strong> Each observed numerical
-value is mapped to the interval (0, 1) using a min-max transform: <em>u
-= (x − x_min) / (x_max − x_min)</em>. The endpoints are clamped slightly
-away from 0 and 1 to prevent infinite values in the next step.</p>
+<p><strong>1. Transform to uniform.</strong> Each numerical value is
+mapped to the interval (0, 1) through its fitted marginal CDF (the
+probability integral transform). <code>rsdv</code> fits a parametric
+family per column — <code>norm</code>, <code>beta</code>,
+<code>gamma</code>, <code>truncnorm</code>, or <code>uniform</code> —
+and by default (<code>default_distribution = "auto"</code>) selects the
+best-fitting family by Kolmogorov-Smirnov distance. You can override the
+choice per column via <code>numerical_distributions</code>. Categorical
+and boolean columns are mapped to (0, 1) by their cumulative-frequency
+intervals (each value is placed uniformly at random within its
+category’s interval), so they enter the copula too.</p>
 <p><strong>2. Map to normal space.</strong> The uniform values are
 passed through the standard normal quantile function (Φ⁻¹), yielding
 pseudo-observations on the real line.</p>
@@ -187,13 +194,14 @@ inversion of Kendall’s τ, a rank-based method that is more stable than
 maximum likelihood for small samples or tied values.</p>
 <p><strong>4. Sample.</strong> New pseudo-observations are drawn from
 the fitted multivariate normal distribution.</p>
-<p><strong>5. Back-transform.</strong> The sampled normal values are
-mapped back to uniform via Φ, then rescaled to the original range.</p>
-<p>Mixed variable types are handled outside the copula. Categorical
-columns are sampled independently from their empirical marginal
-distribution, preserving observed level frequencies. Boolean columns are
-sampled from a Bernoulli distribution with the observed probability of
-<code>TRUE</code>.</p>
+<p><strong>5. Back-transform.</strong> Numerical columns are mapped back
+through their fitted quantile function; categorical and boolean columns
+are decoded by locating which frequency interval each sampled value
+falls into.</p>
+<p>Because every column — numerical, categorical, and boolean — is
+embedded in a single copula, cross-column dependence is preserved across
+types: numeric-vs-categorical and categorical-vs-categorical
+associations, not just numeric-vs-numeric correlations.</p>
 <p>Missing values are handled by fitting the copula on complete cases
 only. By default, <code>rsdv</code> records the empirical missingness
 rate for each column during fitting and reinstates it at sampling time.
@@ -234,13 +242,13 @@ see the section on missing data below.</p>
 <span><span class="va">synth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample.html">sample</a></span><span class="op">(</span><span class="va">syn</span>, n <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">synth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"education_num"</span>, <span class="st">"occupation"</span>, <span class="st">"income"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        age education_num        occupation income</span></span>
-<span><span class="co">#&gt; 1 41.29898     12.944985    Prof-specialty  &lt;=50K</span></span>
-<span><span class="co">#&gt; 2 79.85225     14.614864 Machine-op-inspct  &lt;=50K</span></span>
-<span><span class="co">#&gt; 3 59.08669      1.053557   Exec-managerial  &lt;=50K</span></span>
-<span><span class="co">#&gt; 4 38.16550     14.974387      Adm-clerical  &lt;=50K</span></span>
-<span><span class="co">#&gt; 5 36.87797     12.616693    Prof-specialty  &lt;=50K</span></span>
-<span><span class="co">#&gt; 6 29.12900      1.133503             Sales  &lt;=50K</span></span></code></pre></div>
+<span><span class="co">#&gt;        age education_num      occupation income</span></span>
+<span><span class="co">#&gt; 1 24.35615     13.218294   Other-service  &lt;=50K</span></span>
+<span><span class="co">#&gt; 2 35.55372      8.167697 Exec-managerial   &gt;50K</span></span>
+<span><span class="co">#&gt; 3 52.08036     13.917412 Farming-fishing  &lt;=50K</span></span>
+<span><span class="co">#&gt; 4 47.64983     12.725404    Adm-clerical   &gt;50K</span></span>
+<span><span class="co">#&gt; 5 32.57353     10.394470 Exec-managerial  &lt;=50K</span></span>
+<span><span class="co">#&gt; 6 65.18644      7.970632   Other-service  &lt;=50K</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -299,15 +307,15 @@ to what appears in the quality report.</p>
 </tr>
 <tr class="even">
 <td><code>"categorical"</code></td>
-<td>Nominal or ordinal text or factor; sampled from empirical
-marginal</td>
+<td>Nominal or ordinal text or factor; embedded in the copula via
+cumulative-frequency intervals</td>
 <td>Occupation, education level</td>
 </tr>
 <tr class="odd">
 <td><code>"boolean"</code></td>
 <td>
-<code>TRUE</code>/<code>FALSE</code>; sampled from empirical
-Bernoulli probability</td>
+<code>TRUE</code>/<code>FALSE</code>; embedded in the copula as a
+two-level categorical</td>
 <td>Flag variables, binary outcomes</td>
 </tr>
 <tr class="even">
@@ -338,51 +346,102 @@ override specific types with <code><a href="../reference/set_column_type.html">s
 <span><span class="va">synth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample.html">sample</a></span><span class="op">(</span><span class="va">syn</span>, n <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></code></pre></div>
 <p>The result is a data frame with 500 rows and the same six columns as
 <code>adult_income</code>. The <code><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit()</a></code> call estimates one
-transformer per registered column and, for numerical columns, fits the
-Gaussian copula correlation matrix on complete cases. The
-<code><a href="../reference/sample.html">sample()</a></code> call generates <code>n</code> synthetic rows by
-drawing from the fitted copula and back-transforming each column through
-its estimated marginal.</p>
+transformer per registered column and fits the Gaussian copula
+correlation matrix over all modeled columns (numerical, categorical, and
+boolean) on complete cases. The <code><a href="../reference/sample.html">sample()</a></code> call generates
+<code>n</code> synthetic rows by drawing from the fitted copula and
+back-transforming each column through its estimated marginal.</p>
+<div class="section level3">
+<h3 id="choosing-marginal-distributions">Choosing marginal distributions<a class="anchor" aria-label="anchor" href="#choosing-marginal-distributions"></a>
+</h3>
+<p>By default each numerical column is fit with the best of five
+parametric families — <code>norm</code>, <code>beta</code>,
+<code>gamma</code>, <code>truncnorm</code>, <code>uniform</code> —
+chosen by Kolmogorov-Smirnov distance
+(<code>default_distribution = "auto"</code>). You can pin a family
+globally or per column when you have prior knowledge about a variable’s
+shape:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">syn_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gaussian_copula_synthesizer.html">gaussian_copula_synthesizer</a></span><span class="op">(</span></span>
+<span>  <span class="va">meta</span>,</span>
+<span>  numerical_distributions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>capital_gain <span class="op">=</span> <span class="st">"gamma"</span><span class="op">)</span>,</span>
+<span>  default_distribution    <span class="op">=</span> <span class="st">"norm"</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">)</span></span></code></pre></div>
+<p>Here <code>capital_gain</code> is modeled as gamma (a natural choice
+for a skewed, non-negative quantity) while all other numerical columns
+use a normal marginal.</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="conditional-sampling">Conditional Sampling<a class="anchor" aria-label="anchor" href="#conditional-sampling"></a>
+</h2>
+<p><code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> generates rows in which one or more
+categorical or boolean columns are held to fixed values, while the
+remaining columns are drawn conditionally through the fitted copula (via
+rejection sampling). This preserves the modeled dependence between the
+conditioned columns and the rest of the table.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">high_earners</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_conditions.html">sample_conditions</a></span><span class="op">(</span></span>
+<span>  <span class="va">syn</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>income <span class="op">=</span> <span class="st">"&gt;50K"</span>, .n <span class="op">=</span> <span class="fl">50</span>, stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">high_earners</span><span class="op">$</span><span class="va">income</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; &gt;50K </span></span>
+<span><span class="co">#&gt;   50</span></span></code></pre></div>
+<p>The optional <code>.n</code> column sets how many rows to generate
+per condition; supply multiple rows to request several conditions at
+once. Conditioning on numerical columns is not supported (exact equality
+is ill-defined for continuous values).</p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="evaluating-quality">Evaluating Quality<a class="anchor" aria-label="anchor" href="#evaluating-quality"></a>
 </h2>
-<p>A quality report computes three classes of similarity metrics between
-real and synthetic data: column-level distribution similarity,
-correlation structure preservation, and predictive utility.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>A quality report aggregates metrics into the two-property hierarchy
+used by SDMetrics: <strong>Column Shapes</strong> (per-column marginal
+fidelity) and <strong>Column Pair Trends</strong> (pairwise dependence).
+The overall score is the mean of the two properties, so a table with
+many categorical columns and few numerical ones is not weighted by raw
+column counts. ML efficacy, when requested via <code>target_col</code>,
+is reported separately and excluded from the overall score.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/quality_report.html">quality_report</a></span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span>, <span class="va">meta</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">qr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; == rsdv Quality Report ==</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Column Similarity (KS, numerical):</span></span>
-<span><span class="co">#&gt;   id                   0.972</span></span>
-<span><span class="co">#&gt;   age                  0.672</span></span>
-<span><span class="co">#&gt;   fnlwgt               0.318</span></span>
-<span><span class="co">#&gt;   education_num        0.616</span></span>
-<span><span class="co">#&gt;   capital_gain         0.066</span></span>
-<span><span class="co">#&gt;   capital_loss         0.046</span></span>
-<span><span class="co">#&gt;   hours_per_week       0.614</span></span>
+<span><span class="co">#&gt;   id                   0.958</span></span>
+<span><span class="co">#&gt;   age                  0.948</span></span>
+<span><span class="co">#&gt;   fnlwgt               0.950</span></span>
+<span><span class="co">#&gt;   education_num        0.780</span></span>
+<span><span class="co">#&gt;   capital_gain         0.468</span></span>
+<span><span class="co">#&gt;   capital_loss         0.470</span></span>
+<span><span class="co">#&gt;   hours_per_week       0.738</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Column Similarity (TVD, categorical):</span></span>
-<span><span class="co">#&gt;   workclass            0.978</span></span>
-<span><span class="co">#&gt;   education            0.920</span></span>
-<span><span class="co">#&gt;   marital_status       0.976</span></span>
-<span><span class="co">#&gt;   occupation           0.921</span></span>
-<span><span class="co">#&gt;   relationship         0.966</span></span>
-<span><span class="co">#&gt;   race                 0.966</span></span>
-<span><span class="co">#&gt;   sex                  0.976</span></span>
-<span><span class="co">#&gt;   native_country       0.974</span></span>
-<span><span class="co">#&gt;   income               0.994</span></span>
+<span><span class="co">#&gt;   workclass            0.961</span></span>
+<span><span class="co">#&gt;   education            0.944</span></span>
+<span><span class="co">#&gt;   marital_status       0.952</span></span>
+<span><span class="co">#&gt;   occupation           0.951</span></span>
+<span><span class="co">#&gt;   relationship         0.978</span></span>
+<span><span class="co">#&gt;   race                 0.990</span></span>
+<span><span class="co">#&gt;   sex                  0.992</span></span>
+<span><span class="co">#&gt;   native_country       0.976</span></span>
+<span><span class="co">#&gt;   income               0.980</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Correlation Similarity:      0.965</span></span>
+<span><span class="co">#&gt; Property scores:</span></span>
+<span><span class="co">#&gt;   Column Shapes        0.877</span></span>
+<span><span class="co">#&gt;   Column Pair Trends   0.903</span></span>
+<span><span class="co">#&gt;     (correlation 0.967, contingency 0.865)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Overall Score:               0.800</span></span></code></pre></div>
+<span><span class="co">#&gt; Overall Score:               0.890</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="column-level-similarity">Column-level similarity<a class="anchor" aria-label="anchor" href="#column-level-similarity"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">col_scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    column <span class="op">=</span> <span class="va">qr</span><span class="op">$</span><span class="va">ks_scores</span><span class="op">$</span><span class="va">column</span>,</span>
@@ -439,7 +498,16 @@ column in the real and synthetic datasets, scored 0–1 (1 = identical
 distributions). <strong>Total variation distance (TVD)
 similarity</strong> is the analogous measure for categorical columns: it
 computes the maximum difference in probability mass between the real and
-synthetic frequency distributions, on the same scale.</p>
+synthetic frequency distributions, on the same scale. Together these
+form the <strong>Column Shapes</strong> property.</p>
+<p>The <strong>Column Pair Trends</strong> property captures pairwise
+dependence: <strong>correlation similarity</strong>
+(<code>1 - |corr_real - corr_syn| / 2</code>, averaged over numerical
+pairs) and <strong>contingency similarity</strong> (<code>1 - TVD</code>
+between the joint distributions of each categorical pair). Inspect them
+directly with <code><a href="../reference/correlation_similarity.html">correlation_similarity()</a></code> and
+<code><a href="../reference/contingency_similarity.html">contingency_similarity()</a></code>, each of which returns per-pair
+scores alongside the mean.</p>
 </div>
 <div class="section level3">
 <h3 id="correlation-structure">Correlation structure<a class="anchor" aria-label="anchor" href="#correlation-structure"></a>
@@ -447,7 +515,7 @@ synthetic frequency distributions, on the same scale.</p>
 <p>The Gaussian copula’s primary purpose is to preserve inter-column
 correlation. The heatmaps below compare the Pearson correlation matrices
 for numerical columns in the real and synthetic datasets.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">num_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"education_num"</span>, <span class="st">"hours_per_week"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cor_real</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">[</span>, <span class="va">num_cols</span><span class="op">]</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -505,7 +573,7 @@ for numerical columns in the real and synthetic datasets.</p>
 </h3>
 <p>Overlaid density curves provide a direct visual check on how closely
 the synthetic marginals match the real data.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">age_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>value <span class="op">=</span> <span class="va">adult_income</span><span class="op">$</span><span class="va">age</span>, source <span class="op">=</span> <span class="st">"Real"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>value <span class="op">=</span> <span class="va">synth</span><span class="op">$</span><span class="va">age</span>,        source <span class="op">=</span> <span class="st">"Synthetic"</span><span class="op">)</span></span>
@@ -526,7 +594,7 @@ the synthetic marginals match the real data.</p>
 <span>    plot.title      <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/plot-marginals-age-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">income_real</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">$</span><span class="va">income</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">income_synth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">synth</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>        <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">synth</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">income_real</span><span class="op">)</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"category"</span>, <span class="st">"proportion"</span><span class="op">)</span></span>
@@ -552,19 +620,61 @@ the synthetic marginals match the real data.</p>
 <span>    plot.title      <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/plot-marginals-income-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level3">
+<h3 id="diagnostic-checks">Diagnostic checks<a class="anchor" aria-label="anchor" href="#diagnostic-checks"></a>
+</h3>
+<p>Where the quality report measures how closely synthetic data
+<em>resembles</em> the real data, the diagnostic report checks whether
+it is <em>structurally valid</em> — independent of distributional
+fidelity. It verifies that numerical values fall within the observed
+range (boundary adherence), that categorical values use only seen
+categories (category adherence), and that any primary key is unique and
+complete (key uniqueness), then rolls these into a Data Validity score
+alongside a Data Structure score for column coverage.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnostic_report.html">diagnostic_report</a></span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span>, <span class="va">meta</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">dr</span><span class="op">)</span></span>
+<span><span class="co">#&gt; == rsdv Diagnostic Report ==</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Data Validity (per column):</span></span>
+<span><span class="co">#&gt;   id                   boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   age                  boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   fnlwgt               boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   education_num        boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   capital_gain         boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   capital_loss         boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   hours_per_week       boundary adherence   1.000</span></span>
+<span><span class="co">#&gt;   workclass            category adherence   1.000</span></span>
+<span><span class="co">#&gt;   education            category adherence   1.000</span></span>
+<span><span class="co">#&gt;   marital_status       category adherence   1.000</span></span>
+<span><span class="co">#&gt;   occupation           category adherence   1.000</span></span>
+<span><span class="co">#&gt;   relationship         category adherence   1.000</span></span>
+<span><span class="co">#&gt;   race                 category adherence   1.000</span></span>
+<span><span class="co">#&gt;   sex                  category adherence   1.000</span></span>
+<span><span class="co">#&gt;   native_country       category adherence   1.000</span></span>
+<span><span class="co">#&gt;   income               category adherence   1.000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Data Validity score:   1.000</span></span>
+<span><span class="co">#&gt; Data Structure score:  1.000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Overall Score:         1.000</span></span></code></pre></div>
+<p>A passing diagnostic (scores at or near 1) is a precondition for
+trusting the quality scores: data that is invalid in structure cannot be
+high quality regardless of how its marginals look.</p>
 <hr>
 </div>
 </div>
 <div class="section level2">
 <h2 id="evaluating-privacy">Evaluating Privacy<a class="anchor" aria-label="anchor" href="#evaluating-privacy"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/privacy_report.html">privacy_report</a></span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">pr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; == rsdv Privacy Report ==</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; NNDR Score (higher = more private):  0.748</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; NNDR Score (higher = more private):  0.842</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">score_val</span> <span class="op">&lt;-</span> <span class="va">pr</span><span class="op">$</span><span class="va">nndr_score</span></span>
 <span></span>
 <span><span class="va">zones</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -629,7 +739,7 @@ the distribution.</p>
 <p>For attribute disclosure risk — estimating how easily a known set of
 background variables can be used to infer a sensitive value — use
 <code><a href="../reference/attribute_disclosure_risk.html">attribute_disclosure_risk()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">adr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/attribute_disclosure_risk.html">attribute_disclosure_risk</a></span><span class="op">(</span></span>
 <span>  real          <span class="op">=</span> <span class="va">adult_income</span>,</span>
 <span>  synthetic     <span class="op">=</span> <span class="va">synth</span>,</span>
@@ -637,7 +747,7 @@ background variables can be used to infer a sensitive value — use
 <span>  known_cols    <span class="op">=</span> <span class="st">"age"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Attribute disclosure risk (income given age):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">adr</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attribute disclosure risk (income given age): 0.654</span></span></code></pre></div>
+<span><span class="co">#&gt; Attribute disclosure risk (income given age): 0.636</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -647,7 +757,7 @@ background variables can be used to infer a sensitive value — use
 copula model alone will not guarantee. The constraint system uses
 rejection sampling: rows that fail any constraint are discarded and
 replaced until <code>n</code> valid rows are collected.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta_constrained</span> <span class="op">&lt;-</span> <span class="va">meta</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_constraint.html">add_constraint</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="../reference/inequality_constraint.html">inequality_constraint</a></span><span class="op">(</span><span class="st">"education_num"</span>, <span class="st">"hours_per_week"</span>, type <span class="op">=</span> <span class="st">"lt"</span><span class="op">)</span></span>
@@ -731,7 +841,7 @@ declining to report income, or patients with the worst prognosis
 dropping out of a trial, are MNAR. No synthesis method fully recovers
 from MNAR without auxiliary information.</p>
 <p>For MAR data, pre-imputation before synthesis is recommended:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pre-impute systematically missing data before synthesis</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amices/mice" class="external-link">mice</a></span><span class="op">)</span></span>
 <span><span class="va">imputed</span> <span class="op">&lt;-</span> <span class="fu">complete</span><span class="op">(</span><span class="fu">mice</span><span class="op">(</span><span class="va">your_data</span>, m <span class="op">=</span> <span class="fl">1</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
@@ -769,12 +879,14 @@ extreme values in one variable coincide with extreme values in another,
 which is common in financial returns, insurance claims, and natural
 disaster data. For heavy-tailed dependence structures, a t-copula or
 vine copula extension is more appropriate.</p>
-<p>The current implementation samples categorical columns independently
-from their marginal distributions. Associations between two categorical
-columns — for example, between occupation and education level — are not
-preserved. Researchers for whom these associations are substantively
-important should treat the TVD scores carefully and consider whether the
-synthesis is fit for their purpose.</p>
+<p>Categorical and boolean columns are embedded in the copula via their
+cumulative-frequency intervals, so associations between categorical
+columns — and between categorical and numerical columns — are preserved.
+Because the embedding is rank-based and the latent dependence is
+Gaussian, very fine-grained or strongly non-monotone categorical
+associations may be modeled only approximately; the
+<code><a href="../reference/contingency_similarity.html">contingency_similarity()</a></code> metric reports how well
+categorical pair associations are reproduced.</p>
 <p>Synthesis reduces re-identification risk but does not eliminate it.
 The NNDR and attribute disclosure risk metrics in <code>rsdv</code>
 provide quantitative estimates of residual risk. Use the built-in
@@ -788,15 +900,15 @@ environments.</p>
 </h2>
 <p>If you use <code>rsdv</code> in published research, please cite the
 package:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co">@software{Venkitasubramanian2026rsdv,</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co">  author  = {Venkitasubramanian, Kailas},</span></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">  title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">  year    = {2026},</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">  url     = {https://github.com/kvenkita/rsdv},</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">  note    = {R package version 0.1.0}</span></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co">@software{Venkitasubramanian2026rsdv,</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="co">  author  = {Venkitasubramanian, Kailas},</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="co">  title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co">  year    = {2026},</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">  url     = {https://github.com/kvenkita/rsdv},</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">  note    = {R package version 0.1.0}</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
 <p>You can also retrieve the citation from within R:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"rsdv"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Contact and feedback:</strong> Questions, bug reports, and
 feature requests are welcome at <a href="mailto:kvenkita@charlotte.edu">kvenkita@charlotte.edu</a> or via

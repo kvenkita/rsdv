@@ -37,14 +37,14 @@ tvd_similarity(adult_income, synth, metadata(adult_income))
 #> # A tibble: 9 × 2
 #>   column         score
 #>   <chr>          <dbl>
-#> 1 workclass      0.977
-#> 2 education      0.93 
-#> 3 marital_status 0.95 
-#> 4 occupation     0.949
-#> 5 relationship   0.956
-#> 6 race           0.968
+#> 1 workclass      0.95 
+#> 2 education      0.942
+#> 3 marital_status 0.96 
+#> 4 occupation     0.92 
+#> 5 relationship   0.972
+#> 6 race           0.99 
 #> 7 sex            0.982
-#> 8 native_country 0.958
-#> 9 income         0.948
+#> 8 native_country 0.96 
+#> 9 income         0.988
 # }
 ```

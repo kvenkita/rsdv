@@ -47,10 +47,10 @@ syn       <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth_data <- sample(syn, n = 500)
 ml_efficacy(adult_income, synth_data, meta, target_col = "income")
 #> $tstr
-#> [1] 0.77
+#> [1] 0.85
 #> 
 #> $trtr
-#> [1] 0.77
+#> [1] 0.84
 #> 
 #> $score
 #> [1] 1

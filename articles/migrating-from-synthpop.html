@@ -121,7 +121,7 @@ inter-column correlations.</p>
 <tr class="odd">
 <td>Correlation modeling</td>
 <td>CART-based sequential</td>
-<td>Gaussian copula</td>
+<td>Gaussian copula over all column types</td>
 </tr>
 <tr class="even">
 <td>Column constraints</td>
@@ -129,9 +129,20 @@ inter-column correlations.</p>
 <td>Equality, inequality, fixed combos, custom</td>
 </tr>
 <tr class="odd">
+<td>Conditional sampling</td>
+<td>Via predictor order</td>
+<td>
+<code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> on categorical values</td>
+</tr>
+<tr class="even">
 <td>Quality metrics</td>
 <td>Built-in utility measures</td>
-<td>KS, TVD, correlation, ML efficacy</td>
+<td>KS, TVD, correlation &amp; contingency similarity, ML efficacy</td>
+</tr>
+<tr class="odd">
+<td>Diagnostics</td>
+<td>None</td>
+<td>Validity report (ranges, categories, key uniqueness)</td>
 </tr>
 <tr class="even">
 <td>Privacy metrics</td>

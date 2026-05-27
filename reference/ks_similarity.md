@@ -41,14 +41,14 @@ ks_similarity(adult_income, synth, metadata(adult_income))
 #> Warning: p-value will be approximate in the presence of ties
 #> Warning: p-value will be approximate in the presence of ties
 #> # A tibble: 7 × 2
-#>   column          score
-#>   <chr>           <dbl>
-#> 1 id             0.98  
-#> 2 age            0.674 
-#> 3 fnlwgt         0.326 
-#> 4 education_num  0.608 
-#> 5 capital_gain   0.0660
-#> 6 capital_loss   0.0460
-#> 7 hours_per_week 0.578 
+#>   column         score
+#>   <chr>          <dbl>
+#> 1 id             0.972
+#> 2 age            0.944
+#> 3 fnlwgt         0.954
+#> 4 education_num  0.814
+#> 5 capital_gain   0.49 
+#> 6 capital_loss   0.462
+#> 7 hours_per_week 0.77 
 # }
 ```

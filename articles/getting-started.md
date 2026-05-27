@@ -107,10 +107,16 @@ empirical marginal distributions to generate new observations.
 The Gaussian copula models dependence through a correlation matrix. The
 synthesis pipeline has five stages:
 
-**1. Transform to uniform.** Each observed numerical value is mapped to
-the interval (0, 1) using a min-max transform: *u = (x − x_min) / (x_max
-− x_min)*. The endpoints are clamped slightly away from 0 and 1 to
-prevent infinite values in the next step.
+**1. Transform to uniform.** Each numerical value is mapped to the
+interval (0, 1) through its fitted marginal CDF (the probability
+integral transform). `rsdv` fits a parametric family per column —
+`norm`, `beta`, `gamma`, `truncnorm`, or `uniform` — and by default
+(`default_distribution = "auto"`) selects the best-fitting family by
+Kolmogorov-Smirnov distance. You can override the choice per column via
+`numerical_distributions`. Categorical and boolean columns are mapped to
+(0, 1) by their cumulative-frequency intervals (each value is placed
+uniformly at random within its category’s interval), so they enter the
+copula too.
 
 **2. Map to normal space.** The uniform values are passed through the
 standard normal quantile function (Φ⁻¹), yielding pseudo-observations on
@@ -124,13 +130,14 @@ likelihood for small samples or tied values.
 **4. Sample.** New pseudo-observations are drawn from the fitted
 multivariate normal distribution.
 
-**5. Back-transform.** The sampled normal values are mapped back to
-uniform via Φ, then rescaled to the original range.
+**5. Back-transform.** Numerical columns are mapped back through their
+fitted quantile function; categorical and boolean columns are decoded by
+locating which frequency interval each sampled value falls into.
 
-Mixed variable types are handled outside the copula. Categorical columns
-are sampled independently from their empirical marginal distribution,
-preserving observed level frequencies. Boolean columns are sampled from
-a Bernoulli distribution with the observed probability of `TRUE`.
+Because every column — numerical, categorical, and boolean — is embedded
+in a single copula, cross-column dependence is preserved across types:
+numeric-vs-categorical and categorical-vs-categorical associations, not
+just numeric-vs-numeric correlations.
 
 Missing values are handled by fitting the copula on complete cases only.
 By default, `rsdv` records the empirical missingness rate for each
@@ -171,13 +178,13 @@ syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 
 head(synth[, c("age", "education_num", "occupation", "income")])
-#>        age education_num        occupation income
-#> 1 41.29898     12.944985    Prof-specialty  <=50K
-#> 2 79.85225     14.614864 Machine-op-inspct  <=50K
-#> 3 59.08669      1.053557   Exec-managerial  <=50K
-#> 4 38.16550     14.974387      Adm-clerical  <=50K
-#> 5 36.87797     12.616693    Prof-specialty  <=50K
-#> 6 29.12900      1.133503             Sales  <=50K
+#>        age education_num      occupation income
+#> 1 24.35615     13.218294   Other-service  <=50K
+#> 2 35.55372      8.167697 Exec-managerial   >50K
+#> 3 52.08036     13.917412 Farming-fishing  <=50K
+#> 4 47.64983     12.725404    Adm-clerical   >50K
+#> 5 32.57353     10.394470 Exec-managerial  <=50K
+#> 6 65.18644      7.970632   Other-service  <=50K
 ```
 
 ------------------------------------------------------------------------
@@ -221,13 +228,13 @@ print(meta)
 
 **Supported column types:**
 
-| Type            | Description                                                        | Example columns                 |
-|-----------------|--------------------------------------------------------------------|---------------------------------|
-| `"numerical"`   | Continuous or discrete numeric; modelled through the copula        | Age, income, test scores        |
-| `"categorical"` | Nominal or ordinal text or factor; sampled from empirical marginal | Occupation, education level     |
-| `"boolean"`     | `TRUE`/`FALSE`; sampled from empirical Bernoulli probability       | Flag variables, binary outcomes |
-| `"id"`          | Row identifier; excluded from synthesis                            | Record IDs                      |
-| `"datetime"`    | Date or timestamp; excluded from synthesis                         | Survey date                     |
+| Type            | Description                                                                                  | Example columns                 |
+|-----------------|----------------------------------------------------------------------------------------------|---------------------------------|
+| `"numerical"`   | Continuous or discrete numeric; modelled through the copula                                  | Age, income, test scores        |
+| `"categorical"` | Nominal or ordinal text or factor; embedded in the copula via cumulative-frequency intervals | Occupation, education level     |
+| `"boolean"`     | `TRUE`/`FALSE`; embedded in the copula as a two-level categorical                            | Flag variables, binary outcomes |
+| `"id"`          | Row identifier; excluded from synthesis                                                      | Record IDs                      |
+| `"datetime"`    | Date or timestamp; excluded from synthesis                                                   | Survey date                     |
 
 Automatic column type detection is available: passing a data frame to
 [`metadata()`](https://kvenkita.github.io/rsdv/reference/metadata.md)
@@ -250,19 +257,72 @@ synth <- sample(syn, n = 500)
 The result is a data frame with 500 rows and the same six columns as
 `adult_income`. The
 [`fit()`](https://generics.r-lib.org/reference/fit.html) call estimates
-one transformer per registered column and, for numerical columns, fits
-the Gaussian copula correlation matrix on complete cases. The
+one transformer per registered column and fits the Gaussian copula
+correlation matrix over all modeled columns (numerical, categorical, and
+boolean) on complete cases. The
 [`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) call
 generates `n` synthetic rows by drawing from the fitted copula and
 back-transforming each column through its estimated marginal.
+
+### Choosing marginal distributions
+
+By default each numerical column is fit with the best of five parametric
+families — `norm`, `beta`, `gamma`, `truncnorm`, `uniform` — chosen by
+Kolmogorov-Smirnov distance (`default_distribution = "auto"`). You can
+pin a family globally or per column when you have prior knowledge about
+a variable’s shape:
+
+``` r
+syn_dist <- gaussian_copula_synthesizer(
+  meta,
+  numerical_distributions = list(capital_gain = "gamma"),
+  default_distribution    = "norm"
+) |>
+  fit(adult_income)
+```
+
+Here `capital_gain` is modeled as gamma (a natural choice for a skewed,
+non-negative quantity) while all other numerical columns use a normal
+marginal.
+
+------------------------------------------------------------------------
+
+## Conditional Sampling
+
+[`sample_conditions()`](https://kvenkita.github.io/rsdv/reference/sample_conditions.md)
+generates rows in which one or more categorical or boolean columns are
+held to fixed values, while the remaining columns are drawn
+conditionally through the fitted copula (via rejection sampling). This
+preserves the modeled dependence between the conditioned columns and the
+rest of the table.
+
+``` r
+high_earners <- sample_conditions(
+  syn,
+  data.frame(income = ">50K", .n = 50, stringsAsFactors = FALSE)
+)
+table(high_earners$income)
+#> 
+#> >50K 
+#>   50
+```
+
+The optional `.n` column sets how many rows to generate per condition;
+supply multiple rows to request several conditions at once. Conditioning
+on numerical columns is not supported (exact equality is ill-defined for
+continuous values).
 
 ------------------------------------------------------------------------
 
 ## Evaluating Quality
 
-A quality report computes three classes of similarity metrics between
-real and synthetic data: column-level distribution similarity,
-correlation structure preservation, and predictive utility.
+A quality report aggregates metrics into the two-property hierarchy used
+by SDMetrics: **Column Shapes** (per-column marginal fidelity) and
+**Column Pair Trends** (pairwise dependence). The overall score is the
+mean of the two properties, so a table with many categorical columns and
+few numerical ones is not weighted by raw column counts. ML efficacy,
+when requested via `target_col`, is reported separately and excluded
+from the overall score.
 
 ``` r
 qr <- quality_report(adult_income, synth, meta)
@@ -270,28 +330,31 @@ print(qr)
 #> == rsdv Quality Report ==
 #> 
 #> Column Similarity (KS, numerical):
-#>   id                   0.972
-#>   age                  0.672
-#>   fnlwgt               0.318
-#>   education_num        0.616
-#>   capital_gain         0.066
-#>   capital_loss         0.046
-#>   hours_per_week       0.614
+#>   id                   0.958
+#>   age                  0.948
+#>   fnlwgt               0.950
+#>   education_num        0.780
+#>   capital_gain         0.468
+#>   capital_loss         0.470
+#>   hours_per_week       0.738
 #> 
 #> Column Similarity (TVD, categorical):
-#>   workclass            0.978
-#>   education            0.920
-#>   marital_status       0.976
-#>   occupation           0.921
-#>   relationship         0.966
-#>   race                 0.966
-#>   sex                  0.976
-#>   native_country       0.974
-#>   income               0.994
+#>   workclass            0.961
+#>   education            0.944
+#>   marital_status       0.952
+#>   occupation           0.951
+#>   relationship         0.978
+#>   race                 0.990
+#>   sex                  0.992
+#>   native_country       0.976
+#>   income               0.980
 #> 
-#> Correlation Similarity:      0.965
+#> Property scores:
+#>   Column Shapes        0.877
+#>   Column Pair Trends   0.903
+#>     (correlation 0.967, contingency 0.865)
 #> 
-#> Overall Score:               0.800
+#> Overall Score:               0.890
 ```
 
 ### Column-level similarity
@@ -356,7 +419,17 @@ and synthetic datasets, scored 0–1 (1 = identical distributions).
 **Total variation distance (TVD) similarity** is the analogous measure
 for categorical columns: it computes the maximum difference in
 probability mass between the real and synthetic frequency distributions,
-on the same scale.
+on the same scale. Together these form the **Column Shapes** property.
+
+The **Column Pair Trends** property captures pairwise dependence:
+**correlation similarity** (`1 - |corr_real - corr_syn| / 2`, averaged
+over numerical pairs) and **contingency similarity** (`1 - TVD` between
+the joint distributions of each categorical pair). Inspect them directly
+with
+[`correlation_similarity()`](https://kvenkita.github.io/rsdv/reference/correlation_similarity.md)
+and
+[`contingency_similarity()`](https://kvenkita.github.io/rsdv/reference/contingency_similarity.md),
+each of which returns per-pair scores alongside the mean.
 
 ### Correlation structure
 
@@ -477,6 +550,50 @@ ggplot2::ggplot(
 
 ![](getting-started_files/figure-html/plot-marginals-income-1.png)
 
+### Diagnostic checks
+
+Where the quality report measures how closely synthetic data *resembles*
+the real data, the diagnostic report checks whether it is *structurally
+valid* — independent of distributional fidelity. It verifies that
+numerical values fall within the observed range (boundary adherence),
+that categorical values use only seen categories (category adherence),
+and that any primary key is unique and complete (key uniqueness), then
+rolls these into a Data Validity score alongside a Data Structure score
+for column coverage.
+
+``` r
+dr <- diagnostic_report(adult_income, synth, meta)
+print(dr)
+#> == rsdv Diagnostic Report ==
+#> 
+#> Data Validity (per column):
+#>   id                   boundary adherence   1.000
+#>   age                  boundary adherence   1.000
+#>   fnlwgt               boundary adherence   1.000
+#>   education_num        boundary adherence   1.000
+#>   capital_gain         boundary adherence   1.000
+#>   capital_loss         boundary adherence   1.000
+#>   hours_per_week       boundary adherence   1.000
+#>   workclass            category adherence   1.000
+#>   education            category adherence   1.000
+#>   marital_status       category adherence   1.000
+#>   occupation           category adherence   1.000
+#>   relationship         category adherence   1.000
+#>   race                 category adherence   1.000
+#>   sex                  category adherence   1.000
+#>   native_country       category adherence   1.000
+#>   income               category adherence   1.000
+#> 
+#> Data Validity score:   1.000
+#> Data Structure score:  1.000
+#> 
+#> Overall Score:         1.000
+```
+
+A passing diagnostic (scores at or near 1) is a precondition for
+trusting the quality scores: data that is invalid in structure cannot be
+high quality regardless of how its marginals look.
+
 ------------------------------------------------------------------------
 
 ## Evaluating Privacy
@@ -486,7 +603,7 @@ pr <- privacy_report(adult_income, synth)
 print(pr)
 #> == rsdv Privacy Report ==
 #> 
-#> NNDR Score (higher = more private):  0.748
+#> NNDR Score (higher = more private):  0.842
 ```
 
 ``` r
@@ -567,7 +684,7 @@ adr <- attribute_disclosure_risk(
   known_cols    = "age"
 )
 cat("Attribute disclosure risk (income given age):", round(adr, 3), "\n")
-#> Attribute disclosure risk (income given age): 0.654
+#> Attribute disclosure risk (income given age): 0.636
 ```
 
 ------------------------------------------------------------------------
@@ -681,12 +798,14 @@ in financial returns, insurance claims, and natural disaster data. For
 heavy-tailed dependence structures, a t-copula or vine copula extension
 is more appropriate.
 
-The current implementation samples categorical columns independently
-from their marginal distributions. Associations between two categorical
-columns — for example, between occupation and education level — are not
-preserved. Researchers for whom these associations are substantively
-important should treat the TVD scores carefully and consider whether the
-synthesis is fit for their purpose.
+Categorical and boolean columns are embedded in the copula via their
+cumulative-frequency intervals, so associations between categorical
+columns — and between categorical and numerical columns — are preserved.
+Because the embedding is rank-based and the latent dependence is
+Gaussian, very fine-grained or strongly non-monotone categorical
+associations may be modeled only approximately; the
+[`contingency_similarity()`](https://kvenkita.github.io/rsdv/reference/contingency_similarity.md)
+metric reports how well categorical pair associations are reproduced.
 
 Synthesis reduces re-identification risk but does not eliminate it. The
 NNDR and attribute disclosure risk metrics in `rsdv` provide

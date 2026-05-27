@@ -35,10 +35,12 @@ synthetic_data <- sample(syn, n = nrow(adult_income))
 
 ## Key differences
 
-| Feature              | synthpop                  | rsdv                                       |
-|----------------------|---------------------------|--------------------------------------------|
-| Correlation modeling | CART-based sequential     | Gaussian copula                            |
-| Column constraints   | Limited                   | Equality, inequality, fixed combos, custom |
-| Quality metrics      | Built-in utility measures | KS, TVD, correlation, ML efficacy          |
-| Privacy metrics      | None                      | NNDR, attribute disclosure risk            |
-| Python interop       | No                        | API-compatible with SDV                    |
+| Feature              | synthpop                  | rsdv                                                                                                          |
+|----------------------|---------------------------|---------------------------------------------------------------------------------------------------------------|
+| Correlation modeling | CART-based sequential     | Gaussian copula over all column types                                                                         |
+| Column constraints   | Limited                   | Equality, inequality, fixed combos, custom                                                                    |
+| Conditional sampling | Via predictor order       | [`sample_conditions()`](https://kvenkita.github.io/rsdv/reference/sample_conditions.md) on categorical values |
+| Quality metrics      | Built-in utility measures | KS, TVD, correlation & contingency similarity, ML efficacy                                                    |
+| Diagnostics          | None                      | Validity report (ranges, categories, key uniqueness)                                                          |
+| Privacy metrics      | None                      | NNDR, attribute disclosure risk                                                                               |
+| Python interop       | No                        | API-compatible with SDV                                                                                       |
