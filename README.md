@@ -7,11 +7,13 @@
 [![Codecov](https://codecov.io/gh/kvenkita/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/kvenkita/rsdv)
 <!-- badges: end -->
 
-**Synthetic data generation in R (Gaussian Copula based, extensible to deep generative models)**
+**Synthetic data generation in R (Gaussian Copula based, extensible to
+deep generative models)**
 
-`rsdv` is an R implementation of Python’s [Synthetic Data Vault (SDV)](https://sdv.dev/)
-framework (Patki, Wedge, and Veeramachaneni 2016). It generates synthetic tabular data
-using Gaussian copula models, with built-in quality and privacy evaluation.
+`rsdv` is an R implementation of Python’s [Synthetic Data Vault
+(SDV)](https://sdv.dev/) framework (Patki, Wedge, and Veeramachaneni
+2016). It generates synthetic tabular data using Gaussian copula models,
+with built-in quality and privacy evaluation.
 
 ## Installation
 
@@ -80,14 +82,16 @@ print(qr)
 #> Overall Score:               0.890
 ```
 
-`quality_report()` aggregates metrics into the two-property hierarchy used by
-SDMetrics — **Column Shapes** (per-column marginal fidelity) and **Column Pair
-Trends** (correlation similarity for numerical pairs, contingency similarity
-for categorical pairs) — with the overall score the mean of the two.
+`quality_report()` aggregates metrics into the two-property hierarchy
+used by SDMetrics — **Column Shapes** (per-column marginal fidelity) and
+**Column Pair Trends** (correlation similarity for numerical pairs,
+contingency similarity for categorical pairs) — with the overall score
+the mean of the two.
 
-`diagnostic_report()` complements it with structural-validity checks (value
-ranges, category adherence, key uniqueness), and `sample_conditions()`
-generates rows that hold given categorical values fixed:
+`diagnostic_report()` complements it with structural-validity checks
+(value ranges, category adherence, key uniqueness), and
+`sample_conditions()` generates rows that hold given categorical values
+fixed:
 
 ``` r
 # Validity checks
