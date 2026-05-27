@@ -29,11 +29,14 @@ reference:
                fixed_combinations_constraint, custom_constraint,
                check_constraint, check_constraints]
   - title: "Synthesizers"
-    contents: [gaussian_copula_synthesizer, fit, sample, is_fitted, validate_data]
+    contents: [gaussian_copula_synthesizer, fit, sample, sample_conditions,
+               is_fitted, validate_data]
   - title: "Evaluation"
     contents: [quality_report, print.rsdv_quality_report, autoplot.rsdv_quality_report,
+               diagnostic_report, print.rsdv_diagnostic_report, autoplot.rsdv_diagnostic_report,
                privacy_report, print.rsdv_privacy_report, autoplot.rsdv_privacy_report,
-               ks_similarity, tvd_similarity, correlation_similarity, ml_efficacy,
+               ks_similarity, tvd_similarity, correlation_similarity,
+               contingency_similarity, ml_efficacy,
                nndr, attribute_disclosure_risk]
   - title: "Data"
     contents: [adult_income]
