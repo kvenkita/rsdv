@@ -28,7 +28,7 @@ the synthetic data.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://kvenkita.github.io/rsdv}
+  \item \url{https://kvenkita.github.io/rsdv/}
   \item \url{https://github.com/kvenkita/rsdv}
   \item Report bugs at \url{https://github.com/kvenkita/rsdv/issues}
 }
