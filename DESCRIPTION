@@ -1,6 +1,6 @@
 Package: rsdv
 Type: Package
-Title: Synthetic Tabular Data Generation for R
+Title: Synthetic Tabular Data Generation with Gaussian Copulas
 Version: 0.1.0
 Authors@R:
     person(given = "Kailas",
@@ -8,11 +8,17 @@ Authors@R:
            email = "kailasv@gmail.com",
            role = c("aut", "cre"))
 Description: Generates synthetic tabular data from real datasets using
-    Gaussian copula models. Provides column-type metadata, constraint
-    specification, and quality/privacy evaluation metrics. Inspired by
-    the Python SDV (Synthetic Data Vault) library by DataCebo.
+    Gaussian copula models, with parametric marginal selection for
+    numerical columns and a cumulative-frequency embedding that brings
+    categorical and boolean columns into the same joint copula. Includes
+    a metadata system with column types and primary keys, declarative
+    constraints enforced via rejection sampling, conditional sampling,
+    and quality, validity and privacy reports modeled on those of the
+    'SDMetrics' library. Inspired by the Python 'SDV' (Synthetic Data
+    Vault) library by 'DataCebo'.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 URL: https://kvenkita.github.io/rsdv, https://github.com/kvenkita/rsdv

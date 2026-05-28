@@ -1,4 +1,5 @@
 ^LICENSE\.md$
+^\.claude$
 ^data-raw$
 ^doc$
 ^Meta$
