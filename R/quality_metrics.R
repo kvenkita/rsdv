@@ -14,7 +14,10 @@
 ks_similarity <- function(real, synthetic, meta) {
   num_cols <- get_columns_by_type(meta, "numerical")
   rows <- lapply(num_cols, function(col) {
-    ks <- stats::ks.test(real[[col]], synthetic[[col]])
+    # ks.test warns "p-value will be approximate in the presence of ties";
+    # we only use the D statistic (the 1 - D similarity score), not the
+    # p-value, so the warning is noise for our callers.
+    ks <- suppressWarnings(stats::ks.test(real[[col]], synthetic[[col]]))
     list(column = col, score = 1 - ks$statistic[[1L]])
   })
   tibble::tibble(
