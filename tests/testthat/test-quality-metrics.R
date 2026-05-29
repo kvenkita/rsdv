@@ -101,3 +101,14 @@ test_that("ml_efficacy() returns list with tstr, trtr, score in [0,1]", {
   expect_true(all(c("tstr", "trtr", "score") %in% names(res)))
   expect_true(res$score >= 0 && res$score <= 1)
 })
+
+test_that("ks_similarity() does not emit ks.test ties warning to the user", {
+  # Tied integer data triggers ks.test's "p-value will be approximate in the
+  # presence of ties" warning. The metric only uses the D statistic, so the
+  # warning is noise — confirm it does not leak through to the caller.
+  set.seed(7)
+  real <- data.frame(x = sample(1:5, 80, replace = TRUE))
+  syn  <- data.frame(x = sample(1:5, 80, replace = TRUE))
+  meta <- metadata() |> set_column_type("x", "numerical")
+  expect_no_warning(ks_similarity(real, syn, meta))
+})
