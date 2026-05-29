@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>")
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/kvenkita/rsdv/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/kvenkita/rsdv/actions)
-[![Codecov](https://codecov.io/gh/kvenkita/rsdv/branch/main/graph/badge.svg)](https://codecov.io/gh/kvenkita/rsdv)
 <!-- badges: end -->
 
 **Synthetic data generation in R (Gaussian Copula based, extensible to deep generative models)**
