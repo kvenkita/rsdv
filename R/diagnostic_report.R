@@ -45,7 +45,9 @@ diagnostic_report <- function(real, synthetic, metadata) {
     if (is.null(synthetic[[col]])) next
     v  <- synthetic[[col]][!is.na(synthetic[[col]])]
     lo <- min(real[[col]], na.rm = TRUE); hi <- max(real[[col]], na.rm = TRUE)
-    score <- if (length(v) == 0L) 1 else mean(v >= lo & v <= hi)
+    # No non-NA values means we have nothing to validate; report NA rather than
+    # the misleading "perfect 1.0" the previous code returned.
+    score <- if (length(v) == 0L) NA_real_ else mean(v >= lo & v <= hi)
     add(col, "boundary adherence", score)
   }
 
@@ -54,7 +56,7 @@ diagnostic_report <- function(real, synthetic, metadata) {
     v        <- as.character(synthetic[[col]])
     v        <- v[!is.na(v)]
     allowed  <- as.character(unique(real[[col]]))
-    score    <- if (length(v) == 0L) 1 else mean(v %in% allowed)
+    score    <- if (length(v) == 0L) NA_real_ else mean(v %in% allowed)
     add(col, "category adherence", score)
   }
 
@@ -75,7 +77,8 @@ diagnostic_report <- function(real, synthetic, metadata) {
   present    <- expected %in% names(synthetic)
   structure_score <- if (length(expected) == 0L) 1 else mean(present)
 
-  validity_score <- if (nrow(validity) > 0L) mean(validity$score) else NA_real_
+  validity_score <- if (nrow(validity) > 0L) mean(validity$score, na.rm = TRUE) else NA_real_
+  if (is.nan(validity_score)) validity_score <- NA_real_  # all-NA case
   property_scores <- c(validity_score, structure_score)
   overall <- mean(property_scores, na.rm = TRUE)
 
