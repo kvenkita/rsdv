@@ -158,7 +158,10 @@ contingency_similarity <- function(real, synthetic, meta) {
 #' @param synthetic A data frame of synthetic data.
 #' @param meta An `rsdv_metadata` object.
 #' @param target_col Name of a categorical column to use as the outcome.
-#' @param test_fraction Fraction of `real` to hold out as the test set.
+#' @param test_fraction Fraction of `real` to hold out as the test set. Must be
+#'   strictly between 0 and 1.
+#' @param seed Optional integer seed. When supplied, the train/test split is
+#'   reproducible across calls without affecting the caller's RNG stream.
 #' @return A list with elements `tstr` (accuracy), `trtr` (accuracy), and
 #'   `score` (ratio, capped at 1).
 #' @export
@@ -167,12 +170,32 @@ contingency_similarity <- function(real, synthetic, meta) {
 #' meta      <- metadata(adult_income)
 #' syn       <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 #' synth_data <- sample(syn, n = 500)
-#' ml_efficacy(adult_income, synth_data, meta, target_col = "income")
+#' ml_efficacy(adult_income, synth_data, meta, target_col = "income", seed = 1)
 #' }
 ml_efficacy <- function(real, synthetic, meta, target_col,
-                        test_fraction = 0.2) {
-  n        <- nrow(real)
-  test_idx <- sample.int(n, size = floor(n * test_fraction))
+                        test_fraction = 0.2, seed = NULL) {
+  if (!target_col %in% names(real))
+    stop(sprintf("target_col '%s' not found in `real`.", target_col))
+  if (!is.numeric(test_fraction) || length(test_fraction) != 1L ||
+      !is.finite(test_fraction) || test_fraction <= 0 || test_fraction >= 1)
+    stop("`test_fraction` must be a single number strictly between 0 and 1.")
+
+  n <- nrow(real)
+  # Reproducible split when seed is given; otherwise use the global RNG so
+  # behaviour is unchanged for callers who rely on set.seed() outside.
+  test_idx <- if (is.null(seed)) {
+    sample.int(n, size = floor(n * test_fraction))
+  } else {
+    old <- if (exists(".Random.seed", envir = .GlobalEnv))
+      get(".Random.seed", envir = .GlobalEnv) else NULL
+    on.exit(
+      if (is.null(old)) rm(".Random.seed", envir = .GlobalEnv) else
+        assign(".Random.seed", old, envir = .GlobalEnv),
+      add = TRUE
+    )
+    set.seed(seed)
+    sample.int(n, size = floor(n * test_fraction))
+  }
   train_real <- real[-test_idx, , drop = FALSE]
   test_real  <- real[ test_idx, , drop = FALSE]
 
