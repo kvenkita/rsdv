@@ -34,12 +34,6 @@ better).
 syn   <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 ks_similarity(adult_income, synth, metadata(adult_income))
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
 #> # A tibble: 7 × 2
 #>   column         score
 #>   <chr>          <dbl>

@@ -31,12 +31,6 @@ A `ggplot` object.
 syn <- gaussian_copula_synthesizer(metadata(adult_income)) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 qr <- quality_report(adult_income, synth, metadata(adult_income))
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
 ggplot2::autoplot(qr)
 
 # }

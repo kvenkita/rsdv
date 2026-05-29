@@ -93,12 +93,6 @@ enter the overall score (matching SDMetrics).</p>
 <span class="r-in"><span><span class="va">syn</span>   <span class="op">&lt;-</span> <span class="fu"><a href="gaussian_copula_synthesizer.html">gaussian_copula_synthesizer</a></span><span class="op">(</span><span class="va">meta</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">synth</span> <span class="op">&lt;-</span> <span class="fu"><a href="sample.html">sample</a></span><span class="op">(</span><span class="va">syn</span>, n <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">qr</span>    <span class="op">&lt;-</span> <span class="fu">quality_report</span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span>, <span class="va">meta</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>p-value will be approximate in the presence of ties</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">qr</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> == rsdv Quality Report ==</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

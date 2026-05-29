@@ -54,12 +54,6 @@ meta  <- metadata(adult_income) |>
 syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth <- sample(syn, n = 500)
 qr    <- quality_report(adult_income, synth, meta)
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
-#> Warning: p-value will be approximate in the presence of ties
 print(qr)
 #> == rsdv Quality Report ==
 #> 

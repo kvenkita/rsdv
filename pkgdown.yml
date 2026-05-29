@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   migrating-from-synthpop: migrating-from-synthpop.html
-last_built: 2026-05-29T16:43Z
+last_built: 2026-05-29T17:59Z
 urls:
   reference: https://kvenkita.github.io/rsdv/reference
   article: https://kvenkita.github.io/rsdv/articles
