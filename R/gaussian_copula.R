@@ -199,6 +199,7 @@ sample_conditions <- function(x, conditions, max_tries = 100L) {
     stop(sprintf("Unknown condition column(s): %s",
                  paste(sprintf("'%s'", unknown), collapse = ", ")))
 
+  meta <- x$metadata
   out_parts <- vector("list", nrow(conditions))
   for (i in seq_len(nrow(conditions))) {
     need      <- as.integer(counts[i])
@@ -213,7 +214,9 @@ sample_conditions <- function(x, conditions, max_tries = 100L) {
       match <- rep(TRUE, nrow(batch))
       for (col in cond_cols)
         match <- match & as.character(batch[[col]]) == as.character(target[[col]])
-      good <- batch[match, , drop = FALSE]
+      # Honour metadata constraints, matching sample.gaussian_copula_synthesizer.
+      valid <- check_constraints(batch, meta)
+      good  <- batch[match & valid, , drop = FALSE]
       if (nrow(good) > 0L) {
         collected[[tries]] <- good
         remaining <- remaining - nrow(good)
