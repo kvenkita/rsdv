@@ -14,6 +14,12 @@ sample size (base::sample path).}
 
 \item{...}{Additional arguments passed to the method or to \code{\link[base:sample]{base::sample()}}.}
 }
+\value{
+When \code{x} inherits from \code{rsdv_synthesizer}, a data frame of \code{n}
+synthetic rows whose columns match the metadata. When \code{x} is any other
+object, the value returned by \code{\link[base:sample]{base::sample()}} — typically a vector of
+the same type as \code{x} and length \code{n}.
+}
 \description{
 Dispatches to the synthesizer-specific method when \code{x} is an
 \code{rsdv_synthesizer}. For plain R vectors, integers, or characters it

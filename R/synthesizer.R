@@ -13,6 +13,10 @@ generics::fit
 #' @param n Number of synthetic rows to generate (synthesizer path), or
 #'   sample size (base::sample path).
 #' @param ... Additional arguments passed to the method or to [base::sample()].
+#' @return When `x` inherits from `rsdv_synthesizer`, a data frame of `n`
+#'   synthetic rows whose columns match the metadata. When `x` is any other
+#'   object, the value returned by [base::sample()] — typically a vector of
+#'   the same type as `x` and length `n`.
 #' @export
 #' @examples
 #' # Falls back to base::sample for non-synthesizer objects:
