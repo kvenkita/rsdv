@@ -28,6 +28,13 @@ sample(x, n = NULL, ...)
   Additional arguments passed to the method or to
   [`base::sample()`](https://rdrr.io/r/base/sample.html).
 
+## Value
+
+When `x` inherits from `rsdv_synthesizer`, a data frame of `n` synthetic
+rows whose columns match the metadata. When `x` is any other object, the
+value returned by [`base::sample()`](https://rdrr.io/r/base/sample.html)
+— typically a vector of the same type as `x` and length `n`.
+
 ## Examples
 
 ``` r
