@@ -64,6 +64,19 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
   cat_cols  <- get_columns_by_type(meta, "categorical")
   bool_cols <- get_columns_by_type(meta, "boolean")
 
+  # Reject any modeled column that has no non-NA values up front, with a clear
+  # message; otherwise the downstream marginal fitters raise cryptic warnings
+  # about "no non-missing arguments to min" before copula fitting errors out.
+  candidates  <- c(num_cols, cat_cols, bool_cols)
+  empty_cols  <- candidates[vapply(candidates,
+                                   function(col) all(is.na(data[[col]])),
+                                   logical(1L))]
+  if (length(empty_cols) > 0L)
+    stop(sprintf(
+      "Cannot fit: column(s) %s are entirely NA. Drop them, mark them as 'id', or impute before fitting.",
+      paste(sprintf("'%s'", empty_cols), collapse = ", ")
+    ))
+
   object$num_cols  <- num_cols
   object$cat_cols  <- cat_cols
   object$bool_cols <- bool_cols
@@ -88,6 +101,11 @@ fit.gaussian_copula_synthesizer <- function(object, data, ...) {
   if (length(modeled_cols) >= 2L) {
     # Fit on rows that are complete across all modeled columns.
     complete <- stats::complete.cases(data[, modeled_cols, drop = FALSE])
+    if (sum(complete) < 2L)
+      stop(sprintf(
+        "Cannot fit the copula: only %d complete case(s) across the modeled column(s) (%s). At least 2 are required. Check for columns that are entirely or almost entirely NA.",
+        sum(complete), paste(sprintf("'%s'", modeled_cols), collapse = ", ")
+      ))
     u_mat <- do.call(cbind, lapply(modeled_cols, function(col) {
       tr <- object$transformers[[col]]
       switch(tr$type,
