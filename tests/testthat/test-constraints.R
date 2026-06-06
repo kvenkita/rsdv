@@ -48,3 +48,31 @@ test_that("check_constraints() returns all-TRUE when no constraints", {
   meta <- small_meta()
   expect_true(all(check_constraints(df, meta)))
 })
+
+test_that("equality_constraint returns FALSE (not NA) for NA-containing rows", {
+  df <- data.frame(a = c(1, NA, 3, 3), b = c(1, NA, 3, 9))
+  res <- check_constraint(df, equality_constraint("a", "b"))
+  expect_type(res, "logical")
+  expect_false(any(is.na(res)))
+  expect_identical(res, c(TRUE, FALSE, TRUE, FALSE))
+})
+
+test_that("inequality_constraint returns FALSE (not NA) for NA-containing rows", {
+  df  <- data.frame(low = c(1, NA, 5, 7), high = c(2, 3, NA, 4))
+  res <- check_constraint(df, inequality_constraint("low", "high", type = "lt"))
+  expect_type(res, "logical")
+  expect_false(any(is.na(res)))
+  expect_identical(res, c(TRUE, FALSE, FALSE, FALSE))
+})
+
+test_that("check_constraints over a frame with NAs produces no NA in the selector", {
+  meta <- metadata() |>
+    set_column_type("a", "numerical") |>
+    set_column_type("b", "numerical") |>
+    add_constraint(equality_constraint("a", "b"))
+  df <- data.frame(a = c(1, NA, 3), b = c(1, NA, 3))
+  sel <- check_constraints(df, meta)
+  expect_false(any(is.na(sel)))
+  # Down-stream pattern: df[sel, ] must not produce phantom NA rows.
+  expect_equal(nrow(df[sel, , drop = FALSE]), 2L)
+})

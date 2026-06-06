@@ -90,19 +90,24 @@ check_constraint <- function(data, constraint) {
 
 #' @export
 check_constraint.equality_constraint <- function(data, constraint) {
-  data[[constraint$col_a]] == data[[constraint$col_b]]
+  # NA == NA is NA in base R; for constraint checking we treat any NA-involving
+  # row as failing the constraint (so it is rejected by the rejection sampler)
+  # rather than letting NA propagate into the row selector.
+  res <- data[[constraint$col_a]] == data[[constraint$col_b]]
+  res & !is.na(res)
 }
 
 #' @export
 check_constraint.inequality_constraint <- function(data, constraint) {
   a <- data[[constraint$col_a]]
   b <- data[[constraint$col_b]]
-  switch(constraint$direction,
+  res <- switch(constraint$direction,
     lt  = a < b,
     lte = a <= b,
     gt  = a > b,
     gte = a >= b
   )
+  res & !is.na(res)  # NA -> FALSE (row fails); see equality method.
 }
 
 #' @export
