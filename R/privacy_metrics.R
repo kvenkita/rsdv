@@ -43,9 +43,15 @@ nndr <- function(real, synthetic) {
 #' can be correctly inferred from known columns via a k-NN lookup in the
 #' real training data.
 #'
+#' `known_cols` must be numeric, because nearest-neighbour lookup operates on
+#' Euclidean distance over the columns. If you want to use a categorical
+#' column as a known attribute, one-hot encode it first (e.g. with
+#' `model.matrix(~ col - 1, data)`).
+#'
 #' @param real,synthetic Data frames.
 #' @param sensitive_col Name of the column to protect.
-#' @param known_cols Character vector of columns assumed known to an adversary.
+#' @param known_cols Character vector of **numeric** columns assumed known to
+#'   an adversary. Categorical columns are rejected with a clear error.
 #' @param k Number of nearest neighbors used in inference.
 #' @return A scalar in \[0, 1\]; lower = more private.
 #' @export
@@ -57,6 +63,24 @@ nndr <- function(real, synthetic) {
 #' attribute_disclosure_risk(real, syn, sensitive_col = "income", known_cols = "age")
 attribute_disclosure_risk <- function(real, synthetic,
                                       sensitive_col, known_cols, k = 1L) {
+  missing_real <- setdiff(c(known_cols, sensitive_col), names(real))
+  if (length(missing_real) > 0L)
+    stop(sprintf("Column(s) not found in `real`: %s",
+                 paste(sprintf("'%s'", missing_real), collapse = ", ")))
+  missing_syn  <- setdiff(c(known_cols, sensitive_col), names(synthetic))
+  if (length(missing_syn) > 0L)
+    stop(sprintf("Column(s) not found in `synthetic`: %s",
+                 paste(sprintf("'%s'", missing_syn), collapse = ", ")))
+
+  non_numeric <- known_cols[!vapply(real[, known_cols, drop = FALSE],
+                                    is.numeric, logical(1L))]
+  if (length(non_numeric) > 0L)
+    stop(sprintf(
+      "known_cols must be numeric, but %s %s not. One-hot encode categorical knowns first, e.g. model.matrix(~ col - 1, data).",
+      paste(sprintf("'%s'", non_numeric), collapse = ", "),
+      if (length(non_numeric) == 1L) "is" else "are"
+    ))
+
   train_x <- as.matrix(real[, known_cols, drop = FALSE])
   train_y <- real[[sensitive_col]]
   test_x  <- as.matrix(synthetic[, known_cols, drop = FALSE])
@@ -64,5 +88,5 @@ attribute_disclosure_risk <- function(real, synthetic,
 
   nn_idx  <- FNN::knnx.index(data = train_x, query = test_x, k = k)
   pred_y  <- train_y[nn_idx[, 1L]]
-  mean(pred_y == true_y)
+  mean(pred_y == true_y, na.rm = TRUE)
 }
