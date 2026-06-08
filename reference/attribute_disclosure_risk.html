@@ -65,7 +65,8 @@ real training data.</p>
 
 
 <dt id="arg-known-cols">known_cols<a class="anchor" aria-label="anchor" href="#arg-known-cols"></a></dt>
-<dd><p>Character vector of columns assumed known to an adversary.</p></dd>
+<dd><p>Character vector of <strong>numeric</strong> columns assumed known to
+an adversary. Categorical columns are rejected with a clear error.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
@@ -75,6 +76,13 @@ real training data.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A scalar in [0, 1]; lower = more private.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>known_cols</code> must be numeric, because nearest-neighbour lookup operates on
+Euclidean distance over the columns. If you want to use a categorical
+column as a known attribute, one-hot encode it first (e.g. with
+<code>model.matrix(~ col - 1, data)</code>).</p>
     </div>
 
     <div class="section level2">

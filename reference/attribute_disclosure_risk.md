@@ -22,7 +22,8 @@ attribute_disclosure_risk(real, synthetic, sensitive_col, known_cols, k = 1L)
 
 - known_cols:
 
-  Character vector of columns assumed known to an adversary.
+  Character vector of **numeric** columns assumed known to an adversary.
+  Categorical columns are rejected with a clear error.
 
 - k:
 
@@ -31,6 +32,13 @@ attribute_disclosure_risk(real, synthetic, sensitive_col, known_cols, k = 1L)
 ## Value
 
 A scalar in \[0, 1\]; lower = more private.
+
+## Details
+
+`known_cols` must be numeric, because nearest-neighbour lookup operates
+on Euclidean distance over the columns. If you want to use a categorical
+column as a known attribute, one-hot encode it first (e.g. with
+`model.matrix(~ col - 1, data)`).
 
 ## Examples
 

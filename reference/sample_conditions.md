@@ -40,67 +40,67 @@ meta <- metadata(adult_income)
 syn  <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 sample_conditions(syn, data.frame(income = ">50K", .n = 20))
 #>            id      age        workclass    fnlwgt    education education_num
-#> 11 218.822675 30.90465          Private 324717.88  Prof-school     13.363416
-#> 13 384.738445 68.44926 Self-emp-not-inc 310593.11 Some-college     10.420431
-#> 14 325.756964 21.57893          Private 251934.45 Some-college     14.904096
-#> 15 352.125542 45.43990          Private 100460.39         12th      9.983138
-#> 17 153.255800 56.46857          Private  32813.10 Some-college     12.792614
-#> 24  17.508105 28.64699          Private 417179.54    Bachelors      7.769195
-#> 28 160.955018 31.52125     Self-emp-inc 113454.37      HS-grad     12.211911
-#> 33  90.870462 48.16254          Private 151842.85      HS-grad     10.172091
-#> 45 442.724963 33.87502 Self-emp-not-inc 204749.75 Some-college     13.645111
-#> 46 357.654725 23.74789          Private 134317.89  Prof-school      9.648725
-#> 54 495.117944 37.79434          Private 113659.33 Some-college      8.118010
-#> 56 488.228489 50.92532 Self-emp-not-inc 114969.24      HS-grad     15.019079
-#> 58 218.578142 39.52778          Private  77478.44    Doctorate     14.106156
-#> 61 355.609110 34.65901          Private  90193.28      HS-grad     11.286586
-#> 65 498.691823 53.89243          Private 122761.39 Some-college      6.856831
-#> 70 227.120005 38.58683          Private  74196.21          9th      9.183831
-#> 73 337.765421 20.40998          Private 137027.75 Some-college     12.273447
-#> 78 171.931516 47.68097          Private 429585.66  Prof-school      8.305664
-#> 1  307.596951 19.34693             <NA> 138481.99      HS-grad     10.524892
-#> 3    4.467406 37.16348          Private  81887.34      HS-grad      6.263031
-#>        marital_status      occupation   relationship  race    sex capital_gain
-#> 11      Never-married   Other-service        Husband White   Male   6014.99150
-#> 13 Married-civ-spouse           Sales      Own-child White   Male     13.21143
-#> 14      Never-married           Sales  Not-in-family White   Male   1172.40120
-#> 15 Married-civ-spouse   Other-service  Not-in-family White   Male   1165.00309
-#> 17 Married-civ-spouse Exec-managerial  Not-in-family White   Male   1836.09271
-#> 24 Married-civ-spouse           Sales        Husband White   Male   1512.97534
-#> 28      Never-married    Craft-repair      Own-child White   Male    764.68827
-#> 33 Married-civ-spouse   Other-service        Husband White   Male   1919.51866
-#> 45      Never-married   Other-service  Not-in-family White   Male    147.01363
-#> 46          Separated   Other-service      Unmarried White Female   1766.13276
-#> 54      Never-married           Sales      Unmarried White Female   3246.78893
-#> 56           Divorced    Craft-repair  Not-in-family White   Male   3042.29061
-#> 58           Divorced           Sales Other-relative White   Male    969.57926
-#> 61 Married-civ-spouse Exec-managerial  Not-in-family White   Male      0.00000
-#> 65 Married-civ-spouse    Craft-repair      Own-child White Female   2683.58866
-#> 70          Separated   Other-service  Not-in-family White   Male      0.00000
-#> 73      Never-married  Prof-specialty Other-relative White   Male      0.00000
-#> 78 Married-civ-spouse Exec-managerial        Husband Black   Male   2876.82299
-#> 1             Widowed    Adm-clerical      Own-child White Female   2364.52483
-#> 3  Married-civ-spouse Exec-managerial      Own-child White   Male   3325.30648
-#>    capital_loss hours_per_week native_country income
-#> 11      0.00000       47.81940  United-States   >50K
-#> 13    243.32611       30.02707        Jamaica   >50K
-#> 14    126.04612       55.86331  United-States   >50K
-#> 15    431.03873       44.80922  United-States   >50K
-#> 17     40.29587       41.31825        Vietnam   >50K
-#> 24    545.13531       36.70909  United-States   >50K
-#> 28      0.00000       60.55708           <NA>   >50K
-#> 33    972.38834       63.99284  United-States   >50K
-#> 45    589.42260       49.44479  United-States   >50K
-#> 46      0.00000       32.64750  United-States   >50K
-#> 54      0.00000       29.27767  United-States   >50K
-#> 56     92.83474       72.54016  United-States   >50K
-#> 58    380.82144       43.82534  United-States   >50K
-#> 61    135.41597       52.31162  United-States   >50K
-#> 65    439.32340       33.64485  United-States   >50K
-#> 70      0.00000       34.00656  United-States   >50K
-#> 73    221.89106       60.44604  United-States   >50K
-#> 78    951.03405       26.76013  United-States   >50K
-#> 1     227.34198       32.06385  United-States   >50K
-#> 3     137.80236       33.20034  United-States   >50K
+#> 3    35.04209 44.42807 Self-emp-not-inc 256683.33    Assoc-voc      9.190270
+#> 6   491.66844 40.85277 Self-emp-not-inc 228998.08      HS-grad      8.328983
+#> 11   29.87270 73.61848          Private 112817.73         11th     10.481706
+#> 13  355.66350 44.69825 Self-emp-not-inc 211613.70    Bachelors     13.075877
+#> 15  436.63050 37.89232        Local-gov 191834.18    Bachelors      8.645717
+#> 24  469.44515 46.51247          Private 195484.37 Some-college     12.392167
+#> 36  471.49163 60.64892        State-gov 165212.24   Assoc-acdm     10.753584
+#> 41   17.30974 41.90962          Private 329917.95         10th     11.084558
+#> 42  373.83315 39.18879          Private 303704.71   Assoc-acdm      8.763322
+#> 43  351.84878 58.99607          Private  41931.05          9th     13.457904
+#> 48   81.38596 23.69715          Private  33624.78      7th-8th      8.247015
+#> 60  490.01407 49.17818          Private 111274.35         11th      9.423415
+#> 61  467.22816 23.77856             <NA> 122917.70      HS-grad      9.389316
+#> 64  427.05000 61.51472          Private 211830.71    Bachelors     14.093172
+#> 1   435.21279 19.00053 Self-emp-not-inc 217106.36 Some-college      8.048320
+#> 5   146.60520 23.39611             <NA> 140145.93      7th-8th      8.359141
+#> 10  497.82178 25.41194 Self-emp-not-inc 105243.77      HS-grad      8.507569
+#> 131 412.78472 45.34705 Self-emp-not-inc  60500.87    Bachelors     12.213861
+#> 14  128.46251 37.34718          Private 132113.20      HS-grad     10.618252
+#> 151 218.26804 43.43061          Private 172995.81 Some-college      3.143792
+#>            marital_status        occupation   relationship  race    sex
+#> 3           Never-married   Exec-managerial  Not-in-family White   Male
+#> 6   Married-spouse-absent    Prof-specialty      Unmarried White   Male
+#> 11               Divorced      Adm-clerical  Not-in-family White   Male
+#> 13          Never-married      Craft-repair  Not-in-family White Female
+#> 15          Never-married   Exec-managerial        Husband White Female
+#> 24               Divorced      Craft-repair  Not-in-family White   Male
+#> 36     Married-civ-spouse   Exec-managerial  Not-in-family White   Male
+#> 41     Married-civ-spouse   Exec-managerial  Not-in-family White   Male
+#> 42     Married-civ-spouse     Other-service        Husband White   Male
+#> 43     Married-civ-spouse    Prof-specialty        Husband White   Male
+#> 48              Separated   Farming-fishing        Husband White   Male
+#> 60     Married-civ-spouse Machine-op-inspct  Not-in-family White   Male
+#> 61     Married-civ-spouse    Prof-specialty      Unmarried White   Male
+#> 64     Married-civ-spouse   Exec-managerial  Not-in-family White   Male
+#> 1           Never-married     Other-service Other-relative White   Male
+#> 5           Never-married             Sales  Not-in-family White   Male
+#> 10     Married-civ-spouse     Other-service      Own-child White   Male
+#> 131              Divorced   Exec-managerial        Husband Black Female
+#> 14     Married-civ-spouse     Other-service      Own-child White Female
+#> 151    Married-civ-spouse Handlers-cleaners  Not-in-family White   Male
+#>     capital_gain capital_loss hours_per_week     native_country income
+#> 3       793.7141    743.44551       32.35546      United-States   >50K
+#> 6      2240.3643      0.00000       36.57502      United-States   >50K
+#> 11      100.1136      0.00000       62.68463           Portugal   >50K
+#> 13        0.0000    310.81039       40.24056      United-States   >50K
+#> 15        0.0000    530.49276       39.38298      United-States   >50K
+#> 24     2205.5249      0.00000       56.62289      United-States   >50K
+#> 36     1501.2198     12.12366       29.25473      United-States   >50K
+#> 41        0.0000    618.84733       53.20314 Dominican-Republic   >50K
+#> 42        0.0000    769.71221       60.77036      United-States   >50K
+#> 43     1284.8113   1158.82745       83.43212      United-States   >50K
+#> 48     1821.5660     86.68609       40.75433      United-States   >50K
+#> 60     3422.1619    774.04811       43.36069      United-States   >50K
+#> 61        0.0000    197.41299       44.68429      United-States   >50K
+#> 64        0.0000     19.44796       74.45704            Germany   >50K
+#> 1      1609.1082      0.00000       34.79870      United-States   >50K
+#> 5         0.0000    454.73499       28.40710        Philippines   >50K
+#> 10        0.0000      0.00000       45.95187      United-States   >50K
+#> 131    2415.4115      0.00000       34.85091      United-States   >50K
+#> 14        0.0000    928.64780       33.39666      United-States   >50K
+#> 151       0.0000    219.48570       26.23661      United-States   >50K
 # }
 ```

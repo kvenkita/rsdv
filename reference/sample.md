@@ -40,7 +40,7 @@ value returned by [`base::sample()`](https://rdrr.io/r/base/sample.html)
 ``` r
 # Falls back to base::sample for non-synthesizer objects:
 sample(1:10, 3)
-#> [1] 1 3 6
+#> [1] 3 9 8
 
 # \donttest{
 meta  <- metadata(adult_income) |>
@@ -49,26 +49,26 @@ meta  <- metadata(adult_income) |>
 syn   <- gaussian_copula_synthesizer(meta) |> fit(adult_income)
 synth <- sample(syn, n = 100)
 head(synth)
-#>         id      age workclass    fnlwgt    education education_num
-#> 1 496.1005 22.63580   Private 244277.33      HS-grad      9.402237
-#> 2 151.7045 52.34715   Private 253542.40      HS-grad     11.311088
-#> 3  42.4010 39.55661      <NA> 519520.69 Some-college      6.377475
-#> 4 324.3207 60.55661 Local-gov 181866.18    Bachelors     11.438681
-#> 5 449.4966 20.84860   Private 127803.23      HS-grad      7.604183
-#> 6 186.6424 40.96523   Private  92935.35 Some-college      8.565641
-#>       marital_status        occupation  relationship  race    sex capital_gain
-#> 1      Never-married Machine-op-inspct          Wife White   Male        0.000
-#> 2 Married-civ-spouse   Protective-serv       Husband White   Male     1788.196
-#> 3 Married-civ-spouse   Exec-managerial       Husband Black   Male        0.000
-#> 4 Married-civ-spouse   Protective-serv Not-in-family White Female      860.563
-#> 5      Never-married      Craft-repair          Wife White Female        0.000
-#> 6      Never-married      Craft-repair       Husband White Female      738.085
+#>         id      age        workclass    fnlwgt    education education_num
+#> 1 448.6573 36.24731          Private 312211.18 Some-college     14.819022
+#> 2 208.1265 35.85911        Local-gov 298879.70      HS-grad     10.652169
+#> 3 443.4026 63.24909 Self-emp-not-inc 214673.51    Bachelors     15.032347
+#> 4 263.7632 42.22189          Private  72283.41      5th-6th     10.679390
+#> 5 381.7495 27.64909     Self-emp-inc 218046.41      HS-grad      8.153799
+#> 6 473.1874 21.44361        State-gov 210007.96 Some-college     10.157060
+#>       marital_status      occupation  relationship  race    sex capital_gain
+#> 1      Never-married    Craft-repair Not-in-family White   Male    648.42667
+#> 2           Divorced Farming-fishing     Own-child Black Female     35.93673
+#> 3      Never-married            <NA>       Husband White Female   3034.72984
+#> 4      Never-married    Craft-repair     Unmarried White Female   2221.87632
+#> 5      Never-married    Adm-clerical Not-in-family White   Male      0.00000
+#> 6 Married-civ-spouse Exec-managerial     Own-child White Female      0.00000
 #>   capital_loss hours_per_week native_country income
-#> 1        0.000       45.43182  United-States   >50K
-#> 2        0.000       26.79922  United-States  <=50K
-#> 3        0.000       46.09208  United-States  <=50K
-#> 4     1001.675       65.98557  United-States   >50K
-#> 5        0.000       15.74493  United-States  <=50K
-#> 6      186.460       40.37035  United-States  <=50K
+#> 1     800.6278       42.87681  United-States  <=50K
+#> 2     274.3510       21.81674        Vietnam   >50K
+#> 3     155.4710       62.35495  United-States  <=50K
+#> 4     520.0082       20.15901  United-States   >50K
+#> 5       0.0000       43.23913  United-States  <=50K
+#> 6       0.0000       26.80713    Philippines  <=50K
 # }
 ```

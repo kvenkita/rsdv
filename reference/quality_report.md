@@ -58,30 +58,30 @@ print(qr)
 #> == rsdv Quality Report ==
 #> 
 #> Column Similarity (KS, numerical):
-#>   id                   0.974
-#>   age                  0.954
-#>   fnlwgt               0.956
-#>   education_num        0.784
-#>   capital_gain         0.480
-#>   capital_loss         0.468
-#>   hours_per_week       0.762
+#>   id                   0.942
+#>   age                  0.958
+#>   fnlwgt               0.944
+#>   education_num        0.768
+#>   capital_gain         0.498
+#>   capital_loss         0.456
+#>   hours_per_week       0.748
 #> 
 #> Column Similarity (TVD, categorical):
-#>   workclass            0.960
-#>   education            0.950
-#>   marital_status       0.972
-#>   occupation           0.942
-#>   relationship         0.954
-#>   race                 0.986
-#>   sex                  0.996
-#>   native_country       0.960
-#>   income               0.996
+#>   workclass            0.981
+#>   education            0.928
+#>   marital_status       0.982
+#>   occupation           0.941
+#>   relationship         0.964
+#>   race                 0.976
+#>   sex                  0.952
+#>   native_country       0.974
+#>   income               0.978
 #> 
 #> Property scores:
-#>   Column Shapes        0.881
+#>   Column Shapes        0.874
 #>   Column Pair Trends   0.901
-#>     (correlation 0.980, contingency 0.854)
+#>     (correlation 0.973, contingency 0.859)
 #> 
-#> Overall Score:               0.891
+#> Overall Score:               0.888
 # }
 ```

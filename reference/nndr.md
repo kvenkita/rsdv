@@ -27,5 +27,5 @@ A scalar score in \[0, 1\]; higher = more private.
 real <- data.frame(x = rnorm(50), y = rnorm(50))
 syn  <- data.frame(x = rnorm(50), y = rnorm(50))
 nndr(real, syn)
-#> [1] 0.6
+#> [1] 0.84
 ```
