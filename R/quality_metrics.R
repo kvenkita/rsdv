@@ -64,8 +64,10 @@ tvd_similarity <- function(real, synthetic, meta) {
 #' @param synthetic A data frame of synthetic data.
 #' @param meta An `rsdv_metadata` object.
 #' @return A list with `pairs` (a tibble of `column_1`, `column_2`, `score`) and
-#'   `score` (the mean over pairs; `1` when there are fewer than two numerical
-#'   columns).
+#'   `score` (the mean over pairs). `score` is `NA_real_` when there are fewer
+#'   than two numerical columns — there is no dependence to measure, so
+#'   propagating `NA` (rather than `1`) avoids overstating fidelity in the
+#'   aggregated quality report.
 #' @export
 #' @examples
 #' \donttest{
@@ -77,7 +79,7 @@ correlation_similarity <- function(real, synthetic, meta) {
   num_cols <- get_columns_by_type(meta, "numerical")
   empty    <- tibble::tibble(column_1 = character(), column_2 = character(),
                              score = double())
-  if (length(num_cols) < 2L) return(list(pairs = empty, score = 1))
+  if (length(num_cols) < 2L) return(list(pairs = empty, score = NA_real_))
 
   cor_real <- stats::cor(real[, num_cols, drop = FALSE],
                          use = "pairwise.complete.obs")
@@ -111,8 +113,10 @@ correlation_similarity <- function(real, synthetic, meta) {
 #' @param synthetic A data frame of synthetic data.
 #' @param meta An `rsdv_metadata` object.
 #' @return A list with `pairs` (a tibble of `column_1`, `column_2`, `score`) and
-#'   `score` (the mean over pairs; `1` when there are fewer than two categorical
-#'   columns).
+#'   `score` (the mean over pairs). `score` is `NA_real_` when there are fewer
+#'   than two categorical columns — there is no dependence to measure, so
+#'   propagating `NA` (rather than `1`) avoids overstating fidelity in the
+#'   aggregated quality report.
 #' @export
 #' @examples
 #' \donttest{
@@ -125,7 +129,7 @@ contingency_similarity <- function(real, synthetic, meta) {
   cat_cols <- get_columns_by_type(meta, "categorical")
   empty    <- tibble::tibble(column_1 = character(), column_2 = character(),
                              score = double())
-  if (length(cat_cols) < 2L) return(list(pairs = empty, score = 1))
+  if (length(cat_cols) < 2L) return(list(pairs = empty, score = NA_real_))
 
   combos <- utils::combn(cat_cols, 2L)
   rows   <- lapply(seq_len(ncol(combos)), function(j) {

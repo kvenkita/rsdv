@@ -46,3 +46,25 @@ test_that("diagnostic_report() checks primary key uniqueness", {
     diagnostic_report(real, dup, meta)$validity$score[
       diagnostic_report(real, dup, meta)$validity$check == "key uniqueness"], 0)
 })
+
+test_that("diagnostic_report() returns NA (not 1) for an all-NA synthetic column", {
+  meta <- metadata() |> set_column_type("x", "numerical")
+  real <- data.frame(x = 1:10)
+  syn  <- data.frame(x = as.numeric(rep(NA, 10)))
+  dr   <- diagnostic_report(real, syn, meta)
+  expect_true(is.na(
+    dr$validity$score[dr$validity$check == "boundary adherence"]
+  ))
+})
+
+test_that("diagnostic_report() validity_score skips NA per-column scores", {
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("y", "numerical")
+  real <- data.frame(x = 1:10, y = 1:10)
+  # x synthetic: in-range. y synthetic: all NA -> NA score, should be excluded
+  # from the validity_score average, not pull it down.
+  syn <- data.frame(x = 1:10, y = as.numeric(rep(NA, 10)))
+  dr  <- diagnostic_report(real, syn, meta)
+  expect_equal(dr$validity_score, 1, tolerance = 1e-9)
+})

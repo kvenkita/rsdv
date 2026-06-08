@@ -78,10 +78,13 @@ test_that("contingency_similarity() scores 1 for identical data, lower when degr
   expect_lt(contingency_similarity(real, bad, meta)$score, 1)
 })
 
-test_that("contingency_similarity() returns 1 with fewer than two categorical cols", {
+test_that("contingency_similarity() returns NA with fewer than two categorical cols", {
+  # With only one categorical column there is no categorical pair to score;
+  # we propagate NA so the aggregated quality report does not record an
+  # imaginary "perfect 1" score where there is no signal.
   meta <- metadata() |> set_column_type("a", "categorical")
   df   <- data.frame(a = c("x", "y", "x"), stringsAsFactors = FALSE)
-  expect_equal(contingency_similarity(df, df, meta)$score, 1)
+  expect_true(is.na(contingency_similarity(df, df, meta)$score))
 })
 
 test_that("ml_efficacy() returns list with tstr, trtr, score in [0,1]", {
@@ -161,4 +164,25 @@ test_that("ml_efficacy() rejects out-of-range test_fraction", {
   expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 0))
   expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 1))
   expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 1.5))
+})
+
+test_that("correlation_similarity() score is NA when fewer than 2 numerical cols", {
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("g", "categorical")
+  df   <- data.frame(x = rnorm(20), g = sample(c("a","b"), 20, TRUE),
+                     stringsAsFactors = FALSE)
+  res <- correlation_similarity(df, df, meta)
+  expect_true(is.na(res$score))
+  expect_equal(nrow(res$pairs), 0L)
+})
+
+test_that("contingency_similarity() score is NA when fewer than 2 categorical cols", {
+  meta <- metadata() |>
+    set_column_type("a", "categorical") |>
+    set_column_type("x", "numerical")
+  df   <- data.frame(a = sample(c("u","v"), 20, TRUE), x = rnorm(20),
+                     stringsAsFactors = FALSE)
+  res <- contingency_similarity(df, df, meta)
+  expect_true(is.na(res$score))
 })
