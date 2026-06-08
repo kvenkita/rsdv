@@ -8,7 +8,6 @@ inst/doc
 /Meta/
 _getting-started_phase*.md
 rsdv-landscape.md
-CLAUDE.md
 cran-comments.md
 test_rsdv.R
 dev/

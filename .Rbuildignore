@@ -1,10 +1,8 @@
 ^LICENSE\.md$
-^\.claude$
 ^data-raw$
 ^doc$
 ^Meta$
 ^\.github$
-^CLAUDE\.md$
 ^README\.Rmd$
 ^_pkgdown\.yml$
 ^pkgdown$
