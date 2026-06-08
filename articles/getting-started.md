@@ -603,7 +603,7 @@ pr <- privacy_report(adult_income, synth)
 print(pr)
 #> == rsdv Privacy Report ==
 #> 
-#> NNDR Score (higher = more private):  0.842
+#> NNDR Score (higher = more private):  0.990
 ```
 
 ``` r

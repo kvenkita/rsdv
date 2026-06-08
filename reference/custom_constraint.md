@@ -29,7 +29,7 @@ custom_constraint(function(row) row$x > 0)
 #> $fn
 #> function (row) 
 #> row$x > 0
-#> <environment: 0x55add292aa48>
+#> <environment: 0x5574c216b2a8>
 #> 
 #> attr(,"class")
 #> [1] "custom_constraint" "rsdv_constraint"  
