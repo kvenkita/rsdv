@@ -181,7 +181,7 @@ high_earners <- sample_conditions(
 table(high_earners$income)
 ```
 
-The optional `.n` column sets how many rows to generate per condition; supply multiple rows to request several conditions at once. Conditioning on numerical columns is not supported (exact equality is ill-defined for continuous values).
+The optional `.n` column sets how many rows to generate per condition; supply multiple rows to request several conditions at once. `.n` values must be positive whole numbers. Conditioning on numerical columns is not supported (exact equality is ill-defined for continuous values). Metadata constraints attached to the synthesizer are also honoured during conditional sampling, so any row that violates them is rejected just like in plain `sample()`.
 
 ---
 
@@ -440,6 +440,8 @@ ggplot2::ggplot() +
 
 The **Nearest-Neighbour Distance Ratio (NNDR)** score measures how close each synthetic row is to its nearest real neighbour relative to its second-nearest real neighbour. A high NNDR (approaching 1) means synthetic rows are not suspiciously close to any individual real record — the hallmark of low re-identification risk. A score below 0.5 suggests the synthesis is memorising real rows rather than learning the distribution.
 
+By default `nndr()` z-scores each numerical column using the real-data mean and standard deviation before the Euclidean distance is computed. Without this, a single large-scale column (income in dollars, for instance) dominates the distance and the score moves with measurement units rather than with row similarity. Pass `normalize = FALSE` to recover the unscaled behaviour explicitly.
+
 For attribute disclosure risk — estimating how easily a known set of background variables can be used to infer a sensitive value — use `attribute_disclosure_risk()`:
 
 ```{r attr-disclosure, warning = FALSE}
@@ -475,10 +477,12 @@ all(synth_c$education_num < synth_c$hours_per_week)
 
 | Function | Condition enforced |
 |---|---|
-| `equality_constraint(a, b)` | `a == b` row-wise |
+| `equality_constraint(a, b, tolerance = 0)` | `a == b` row-wise (or `abs(a - b) <= tolerance` for numerics when `tolerance > 0`) |
 | `inequality_constraint(a, b, type)` | `a < b`, `a <= b`, `a > b`, or `a >= b` |
 | `fixed_combinations_constraint(cols, ref)` | Only combinations present in `ref` are permitted |
-| `custom_constraint(fn)` | Arbitrary predicate `f(row) → TRUE/FALSE` |
+| `custom_constraint(fn, vectorized = FALSE)` | Arbitrary predicate; with `vectorized = TRUE`, `fn` is called once on the whole data frame for a substantial speedup |
+
+For continuous numerical columns, exact `==` is almost never satisfied by the copula sampler — use the `tolerance` argument on `equality_constraint()` (or a tight band of `inequality_constraint()`s) instead. Rows containing `NA` are treated as failing equality/inequality checks, so they are rejected by the sampler rather than producing phantom NA rows in the output.
 
 ---
 
@@ -537,7 +541,7 @@ If you use `rsdv` in published research, please cite the package:
   title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},
   year    = {2026},
   url     = {https://github.com/kvenkita/rsdv},
-  note    = {R package version 0.1.0}
+  note    = {R package version 0.2.0}
 }
 ```
 
