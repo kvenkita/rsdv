@@ -36,35 +36,39 @@ diagnostic_report <- function(real, synthetic, metadata) {
   bool_cols <- get_columns_by_type(metadata, "boolean")
   pk        <- metadata$primary_key
 
-  validity_rows <- list()
-  add <- function(column, check, score)
-    validity_rows[[length(validity_rows) + 1L]] <<-
-      list(column = column, check = check, score = score)
+  # Build validity rows declaratively (one lapply per check kind) and
+  # concatenate at the end. This replaces an earlier <<- pattern that
+  # mutated a captured `validity_rows` from inside a helper closure.
+  row <- function(column, check, score)
+    list(column = column, check = check, score = score)
 
-  for (col in num_cols) {
-    if (is.null(synthetic[[col]])) next
+  numerical_rows <- lapply(num_cols, function(col) {
+    if (is.null(synthetic[[col]])) return(NULL)
     v  <- synthetic[[col]][!is.na(synthetic[[col]])]
     lo <- min(real[[col]], na.rm = TRUE); hi <- max(real[[col]], na.rm = TRUE)
     # No non-NA values means we have nothing to validate; report NA rather than
     # the misleading "perfect 1.0" the previous code returned.
     score <- if (length(v) == 0L) NA_real_ else mean(v >= lo & v <= hi)
-    add(col, "boundary adherence", score)
-  }
+    row(col, "boundary adherence", score)
+  })
 
-  for (col in c(cat_cols, bool_cols)) {
-    if (is.null(synthetic[[col]])) next
+  categorical_rows <- lapply(c(cat_cols, bool_cols), function(col) {
+    if (is.null(synthetic[[col]])) return(NULL)
     v        <- as.character(synthetic[[col]])
     v        <- v[!is.na(v)]
     allowed  <- as.character(unique(real[[col]]))
     score    <- if (length(v) == 0L) NA_real_ else mean(v %in% allowed)
-    add(col, "category adherence", score)
-  }
+    row(col, "category adherence", score)
+  })
 
-  if (!is.null(pk) && !is.null(synthetic[[pk]])) {
+  key_rows <- if (!is.null(pk) && !is.null(synthetic[[pk]])) {
     v     <- synthetic[[pk]]
     score <- as.numeric(!anyNA(v) && !anyDuplicated(v))
-    add(pk, "key uniqueness", score)
-  }
+    list(row(pk, "key uniqueness", score))
+  } else list()
+
+  validity_rows <- Filter(Negate(is.null),
+                          c(numerical_rows, categorical_rows, key_rows))
 
   validity <- tibble::tibble(
     column = vapply(validity_rows, `[[`, character(1L), "column"),

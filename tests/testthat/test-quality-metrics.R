@@ -186,3 +186,51 @@ test_that("contingency_similarity() score is NA when fewer than 2 categorical co
   res <- contingency_similarity(df, df, meta)
   expect_true(is.na(res$score))
 })
+
+# --- issue #12 follow-ups -------------------------------------------------
+
+test_that("tvd_similarity() denominator excludes NAs from both sides", {
+  # 90% A / 10% B real with 50% NAs vs the same A/B mix with no NAs:
+  # the score should reflect the A/B mix (identical), not be pulled toward 0
+  # by the NA dilution that the old denominator imposed.
+  meta <- metadata() |> set_column_type("cat", "categorical")
+  real <- data.frame(cat = c(rep("A", 90), rep("B", 10),
+                             rep(NA_character_, 100)),
+                     stringsAsFactors = FALSE)
+  syn  <- data.frame(cat = c(rep("A", 90), rep("B", 10)),
+                     stringsAsFactors = FALSE)
+  out <- tvd_similarity(real, syn, meta)
+  expect_gt(out$score[out$column == "cat"], 0.99)
+})
+
+test_that("tvd_similarity() returns NA when one side is entirely NA", {
+  meta <- metadata() |> set_column_type("cat", "categorical")
+  real <- data.frame(cat = c("A", "B", "A"), stringsAsFactors = FALSE)
+  syn  <- data.frame(cat = rep(NA_character_, 3), stringsAsFactors = FALSE)
+  out  <- tvd_similarity(real, syn, meta)
+  expect_true(is.na(out$score[out$column == "cat"]))
+})
+
+test_that("ml_efficacy() handles factor columns with extra real-side levels", {
+  # tgt has 3 levels in real (a, b, c); synthetic happens to lack 'c'.
+  # Without expanding factor levels in .set_levels, predict() on test_real
+  # raised "factor has new levels: c".
+  set.seed(13)
+  n <- 90
+  real <- data.frame(
+    x   = rnorm(n),
+    tgt = factor(sample(c("a", "b", "c"), n, TRUE, prob = c(0.45, 0.45, 0.1)),
+                 levels = c("a", "b", "c")),
+    stringsAsFactors = FALSE
+  )
+  synthetic <- data.frame(
+    x   = rnorm(n),
+    tgt = factor(sample(c("a", "b"), n, TRUE), levels = c("a", "b", "c")),
+    stringsAsFactors = FALSE
+  )
+  meta <- metadata() |>
+    set_column_type("x",   "numerical") |>
+    set_column_type("tgt", "categorical")
+  res <- ml_efficacy(real, synthetic, meta, "tgt", seed = 1)
+  expect_true(is.finite(res$score) && res$score >= 0 && res$score <= 1)
+})

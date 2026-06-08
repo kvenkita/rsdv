@@ -42,10 +42,21 @@ ks_similarity <- function(real, synthetic, meta) {
 tvd_similarity <- function(real, synthetic, meta) {
   cat_cols <- get_columns_by_type(meta, "categorical")
   rows <- lapply(cat_cols, function(col) {
-    all_levels <- union(unique(real[[col]]), unique(synthetic[[col]]))
-    p_real <- table(factor(real[[col]],      levels = all_levels)) / nrow(real)
-    p_syn  <- table(factor(synthetic[[col]], levels = all_levels)) / nrow(synthetic)
-    tvd    <- 0.5 * sum(abs(as.numeric(p_real) - as.numeric(p_syn)))
+    # Drop NAs and divide by the non-NA count on each side. Including NAs in
+    # the denominator (the old behaviour) inflated TVD whenever either side
+    # had NAs, because the empirical probabilities then summed to less than 1.
+    real_vals <- real[[col]][!is.na(real[[col]])]
+    syn_vals  <- synthetic[[col]][!is.na(synthetic[[col]])]
+    if (length(real_vals) == 0L || length(syn_vals) == 0L) {
+      # No usable data on at least one side — nothing to compare.
+      return(list(column = col, score = NA_real_))
+    }
+    all_levels <- union(unique(real_vals), unique(syn_vals))
+    p_real <- tabulate(match(real_vals, all_levels),
+                       nbins = length(all_levels)) / length(real_vals)
+    p_syn  <- tabulate(match(syn_vals,  all_levels),
+                       nbins = length(all_levels)) / length(syn_vals)
+    tvd    <- 0.5 * sum(abs(p_real - p_syn))
     list(column = col, score = 1 - tvd)
   })
   tibble::tibble(
@@ -223,15 +234,26 @@ ml_efficacy <- function(real, synthetic, meta, target_col,
   list(tstr = tstr, trtr = trtr, score = score)
 }
 
-# Convert character columns in df to factors whose levels are the union of the
-# values present in df and those present in reference. This expands the level
-# set so models fitted on df recognise every value that appears in reference.
+# For each character or factor column in df, expand the level set to the
+# union of all values present in df *or* reference. Models fitted on df then
+# recognise every value that may appear in reference at predict() time,
+# preventing rpart's "factor has new levels" error.
+#
+# Previously only character columns were expanded; factor columns silently
+# kept their original levels and broke predict() whenever reference had a
+# level the synthesizer hadn't drawn.
 .set_levels <- function(df, reference) {
   for (col in names(df)) {
-    if (!is.character(df[[col]])) next
+    is_char <- is.character(df[[col]])
+    is_fac  <- is.factor(df[[col]])
+    if (!is_char && !is_fac) next
     if (!col %in% names(reference)) next
-    lvls <- sort(union(unique(as.character(df[[col]])),
-                       unique(as.character(reference[[col]]))))
+
+    df_vals  <- if (is_fac) c(as.character(df[[col]]), levels(df[[col]]))
+                else        as.character(df[[col]])
+    ref_vals <- as.character(reference[[col]])
+    lvls     <- sort(unique(c(df_vals[!is.na(df_vals)],
+                              ref_vals[!is.na(ref_vals)])))
     df[[col]] <- factor(df[[col]], levels = lvls)
   }
   df

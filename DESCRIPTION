@@ -1,7 +1,7 @@
 Package: rsdv
 Type: Package
 Title: Synthetic Tabular Data Generation with Gaussian Copulas
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person(given = "Kailas",
            family = "Venkitasubramanian",

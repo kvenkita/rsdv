@@ -27,7 +27,9 @@ reference:
   - title: "Constraints"
     contents: [add_constraint, equality_constraint, inequality_constraint,
                fixed_combinations_constraint, custom_constraint,
-               check_constraint, check_constraints]
+               check_constraint, check_constraints,
+               print.equality_constraint, print.inequality_constraint,
+               print.fixed_combinations_constraint, print.custom_constraint]
   - title: "Synthesizers"
     contents: [gaussian_copula_synthesizer, fit, sample, sample_conditions,
                is_fitted, validate_data]

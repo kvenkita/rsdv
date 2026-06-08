@@ -34,6 +34,7 @@ set.seed(42)
 
 # Describe column types
 meta <- metadata(adult_income) |>
+  set_column_type("id",         "id") |>
   set_column_type("age",        "numerical") |>
   set_column_type("occupation", "categorical") |>
   set_column_type("income",     "categorical") |>
