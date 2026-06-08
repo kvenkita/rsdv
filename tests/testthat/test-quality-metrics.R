@@ -112,3 +112,53 @@ test_that("ks_similarity() does not emit ks.test ties warning to the user", {
   meta <- metadata() |> set_column_type("x", "numerical")
   expect_no_warning(ks_similarity(real, syn, meta))
 })
+
+test_that("ml_efficacy() is reproducible across calls with a fixed seed", {
+  set.seed(11)
+  df <- data.frame(
+    x   = rnorm(150),
+    y   = rnorm(150),
+    tgt = sample(c("a", "b"), 150, TRUE),
+    stringsAsFactors = FALSE
+  )
+  meta <- metadata(df)
+  syn  <- gaussian_copula_synthesizer(meta) |> fit(df) |> sample(n = 150)
+  s1 <- ml_efficacy(df, syn, meta, "tgt", seed = 42)$score
+  s2 <- ml_efficacy(df, syn, meta, "tgt", seed = 42)$score
+  expect_equal(s1, s2)
+})
+
+test_that("ml_efficacy() does not perturb the caller's RNG stream", {
+  set.seed(5)
+  df <- data.frame(
+    x   = rnorm(80),
+    tgt = sample(c("a", "b"), 80, TRUE),
+    stringsAsFactors = FALSE
+  )
+  meta <- metadata(df)
+  syn  <- gaussian_copula_synthesizer(meta) |> fit(df) |> sample(n = 80)
+
+  set.seed(99); before <- stats::runif(1)
+  set.seed(99); ml_efficacy(df, syn, meta, "tgt", seed = 1)
+  after  <- stats::runif(1)
+  expect_equal(before, after)
+})
+
+test_that("ml_efficacy() errors on a missing target_col with a clear message", {
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("tgt", "categorical")
+  df   <- data.frame(x = 1:10, tgt = rep(c("a", "b"), 5), stringsAsFactors = FALSE)
+  expect_error(ml_efficacy(df, df, meta, target_col = "nope"),
+               "target_col 'nope' not found")
+})
+
+test_that("ml_efficacy() rejects out-of-range test_fraction", {
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("tgt", "categorical")
+  df   <- data.frame(x = 1:20, tgt = rep(c("a", "b"), 10), stringsAsFactors = FALSE)
+  expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 0))
+  expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 1))
+  expect_error(ml_efficacy(df, df, meta, "tgt", test_fraction = 1.5))
+})
