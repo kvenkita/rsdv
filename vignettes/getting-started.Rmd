@@ -536,12 +536,13 @@ Synthesis reduces re-identification risk but does not eliminate it. The NNDR and
 If you use `rsdv` in published research, please cite the package:
 
 ```bibtex
-@software{Venkitasubramanian2026rsdv,
-  author  = {Venkitasubramanian, Kailas},
-  title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},
-  year    = {2026},
-  url     = {https://github.com/kvenkita/rsdv},
-  note    = {R package version 0.2.0}
+@Manual{Venkitasubramanian2026rsdv,
+  title  = {{rsdv}: Synthetic Tabular Data Generation with Gaussian Copulas},
+  author = {Venkitasubramanian, Kailas},
+  year   = {2026},
+  note   = {R package version 0.2.0},
+  url    = {https://CRAN.R-project.org/package=rsdv},
+  doi    = {10.32614/CRAN.package.rsdv}
 }
 ```
 
