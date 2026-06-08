@@ -77,8 +77,10 @@ categorical-vs-categorical dependence.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with <code>pairs</code> (a tibble of <code>column_1</code>, <code>column_2</code>, <code>score</code>) and
-<code>score</code> (the mean over pairs; <code>1</code> when there are fewer than two categorical
-columns).</p>
+<code>score</code> (the mean over pairs). <code>score</code> is <code>NA_real_</code> when there are fewer
+than two categorical columns — there is no dependence to measure, so
+propagating <code>NA</code> (rather than <code>1</code>) avoids overstating fidelity in the
+aggregated quality report.</p>
     </div>
 
     <div class="section level2">

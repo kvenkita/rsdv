@@ -28,8 +28,10 @@ correlation_similarity(real, synthetic, meta)
 ## Value
 
 A list with `pairs` (a tibble of `column_1`, `column_2`, `score`) and
-`score` (the mean over pairs; `1` when there are fewer than two
-numerical columns).
+`score` (the mean over pairs). `score` is `NA_real_` when there are
+fewer than two numerical columns — there is no dependence to measure, so
+propagating `NA` (rather than `1`) avoids overstating fidelity in the
+aggregated quality report.
 
 ## Examples
 
