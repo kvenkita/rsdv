@@ -35,6 +35,23 @@ gaussian_copula_synthesizer <- function(metadata, enforce_min_max = TRUE,
                  paste(sprintf("'%s'", bad), collapse = ", "),
                  paste(valid, collapse = ", ")))
 
+  # Cross-check numerical_distributions names against metadata so that a typo
+  # like `list(capitl_gain = "gamma")` is reported instead of being silently
+  # ignored (the typo'd entry just defaults to default_distribution).
+  if (length(numerical_distributions) > 0L) {
+    nd_names <- names(numerical_distributions)
+    if (is.null(nd_names) || any(!nzchar(nd_names)))
+      stop("`numerical_distributions` must be a fully-named list/vector.")
+    num_cols <- get_columns_by_type(metadata, "numerical")
+    unknown  <- setdiff(nd_names, num_cols)
+    if (length(unknown) > 0L)
+      stop(sprintf(
+        "`numerical_distributions` names %s are not numerical columns in the metadata. Numerical columns: %s.",
+        paste(sprintf("'%s'", unknown), collapse = ", "),
+        if (length(num_cols)) paste(sprintf("'%s'", num_cols), collapse = ", ") else "(none)"
+      ))
+  }
+
   structure(
     list(
       metadata                = metadata,
@@ -203,6 +220,10 @@ sample_conditions <- function(x, conditions, max_tries = 100L) {
     stop("`conditions` must be a data frame with at least one row.")
 
   counts    <- if (".n" %in% names(conditions)) conditions[[".n"]] else rep(1L, nrow(conditions))
+  if (!is.numeric(counts) || any(!is.finite(counts)) ||
+      any(counts != as.integer(counts)) || any(counts < 1L))
+    stop("`.n` must be a vector of positive whole numbers (one per condition row).")
+  counts    <- as.integer(counts)
   cond_cols <- setdiff(names(conditions), ".n")
 
   # Only categorical/boolean equality conditions can be matched exactly.

@@ -34,7 +34,7 @@ test_that("diagnostic_report() flags unseen categories", {
 
 test_that("diagnostic_report() checks primary key uniqueness", {
   meta <- metadata() |>
-    set_column_type("id", "numerical") |>
+    set_column_type("id", "id") |>
     set_primary_key("id")
   real <- data.frame(id = 1:5)
   uniq <- data.frame(id = 11:15)
