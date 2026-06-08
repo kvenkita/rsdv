@@ -136,3 +136,25 @@ test_that("fit() errors clearly when no row is complete across modeled columns",
   syn  <- gaussian_copula_synthesizer(meta)
   expect_error(fit(syn, df), "complete case")
 })
+
+test_that("gaussian_copula_synthesizer() rejects unknown numerical_distributions names", {
+  meta <- metadata() |>
+    set_column_type("x", "numerical") |>
+    set_column_type("y", "numerical")
+  expect_error(
+    gaussian_copula_synthesizer(
+      meta,
+      numerical_distributions = list(typo_col = "gamma")
+    ),
+    "are not numerical columns"
+  )
+})
+
+test_that("gaussian_copula_synthesizer() rejects unnamed numerical_distributions", {
+  meta <- metadata() |> set_column_type("x", "numerical")
+  expect_error(
+    gaussian_copula_synthesizer(meta,
+                                numerical_distributions = list("gamma")),
+    "fully-named"
+  )
+})

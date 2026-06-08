@@ -80,3 +80,14 @@ test_that("sample_conditions() emits the rejection warning when constraints cann
   )
   expect_equal(nrow(out), 0L)
 })
+
+test_that("sample_conditions() rejects non-positive or non-integer .n values", {
+  df  <- data.frame(g = c("a","b","a","b","a"), x = 1:5, stringsAsFactors = FALSE)
+  syn <- gaussian_copula_synthesizer(metadata(df)) |> fit(df)
+  expect_error(sample_conditions(syn, data.frame(g = "a", .n = 0)),
+               "positive whole numbers")
+  expect_error(sample_conditions(syn, data.frame(g = "a", .n = -2)),
+               "positive whole numbers")
+  expect_error(sample_conditions(syn, data.frame(g = "a", .n = 1.5)),
+               "positive whole numbers")
+})

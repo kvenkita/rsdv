@@ -76,6 +76,12 @@ set_primary_key <- function(meta, column) {
       column
     ))
   }
+  col_type <- meta$columns[[column]]$type
+  if (!identical(col_type, "id"))
+    warning(sprintf(
+      "Primary key column '%s' has type '%s', not 'id'. Synthesis will model it as %s data, which usually produces non-unique values — set its type to 'id' if you want it excluded from synthesis.",
+      column, col_type, col_type
+    ), call. = FALSE)
   meta$primary_key <- column
   meta
 }
