@@ -33,6 +33,10 @@
 <url><loc>https://kvenkita.github.io/rsdv/reference/metadata_to_json.html</loc></url>
 <url><loc>https://kvenkita.github.io/rsdv/reference/ml_efficacy.html</loc></url>
 <url><loc>https://kvenkita.github.io/rsdv/reference/nndr.html</loc></url>
+<url><loc>https://kvenkita.github.io/rsdv/reference/print.custom_constraint.html</loc></url>
+<url><loc>https://kvenkita.github.io/rsdv/reference/print.equality_constraint.html</loc></url>
+<url><loc>https://kvenkita.github.io/rsdv/reference/print.fixed_combinations_constraint.html</loc></url>
+<url><loc>https://kvenkita.github.io/rsdv/reference/print.inequality_constraint.html</loc></url>
 <url><loc>https://kvenkita.github.io/rsdv/reference/print.rsdv_diagnostic_report.html</loc></url>
 <url><loc>https://kvenkita.github.io/rsdv/reference/print.rsdv_metadata.html</loc></url>
 <url><loc>https://kvenkita.github.io/rsdv/reference/print.rsdv_privacy_report.html</loc></url>

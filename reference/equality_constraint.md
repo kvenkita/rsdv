@@ -1,11 +1,15 @@
 # Constraint: two columns must be equal row-wise
 
-Constraint: two columns must be equal row-wise
+For continuous numerical columns, exact `==` is almost never satisfied
+by the copula sampler; use the `tolerance` argument or
+[`inequality_constraint()`](https://kvenkita.github.io/rsdv/reference/inequality_constraint.md)
+with a narrow band. With `tolerance > 0`, equality is
+`abs(a - b) <= tolerance` for numeric columns and exact `==` otherwise.
 
 ## Usage
 
 ``` r
-equality_constraint(col_a, col_b)
+equality_constraint(col_a, col_b, tolerance = 0)
 ```
 
 ## Arguments
@@ -13,6 +17,12 @@ equality_constraint(col_a, col_b)
 - col_a, col_b:
 
   Column names (character).
+
+- tolerance:
+
+  Numeric. When non-zero, numeric columns compare with
+  `abs(a - b) <= tolerance` instead of exact `==`. Ignored for
+  non-numeric columns. Default `0` (exact equality).
 
 ## Value
 
@@ -22,15 +32,7 @@ An `rsdv_constraint` object.
 
 ``` r
 equality_constraint("city", "city_copy")
-#> $type
-#> [1] "equality"
-#> 
-#> $col_a
-#> [1] "city"
-#> 
-#> $col_b
-#> [1] "city_copy"
-#> 
-#> attr(,"class")
-#> [1] "equality_constraint" "rsdv_constraint"    
+#> <equality_constraint>  city == city_copy
+equality_constraint("price_left", "price_right", tolerance = 1e-6)
+#> <equality_constraint>  abs(price_left - price_right) <= 1e-06
 ```

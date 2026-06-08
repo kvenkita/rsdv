@@ -26,18 +26,5 @@ An `rsdv_constraint` object.
 
 ``` r
 inequality_constraint("low", "high", type = "lt")
-#> $type
-#> [1] "inequality"
-#> 
-#> $col_a
-#> [1] "low"
-#> 
-#> $col_b
-#> [1] "high"
-#> 
-#> $direction
-#> [1] "lt"
-#> 
-#> attr(,"class")
-#> [1] "inequality_constraint" "rsdv_constraint"      
+#> <inequality_constraint>  low < high
 ```

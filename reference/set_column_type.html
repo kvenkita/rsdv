@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rsdv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,13 @@
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>One of <code>"numerical"</code>, <code>"categorical"</code>, <code>"boolean"</code>,
-<code>"datetime"</code>, <code>"id"</code>.</p></dd>
+<code>"datetime"</code>, <code>"id"</code>.</p>
+<p>For categorical columns the level <em>order</em> used by the synthesizer follows
+the input: a <code>factor</code> keeps its <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (including ordered
+factors), while a plain character column gets a sorted unique-value order
+for determinism. The sort is <strong>lexicographic</strong>, so numeric-like character
+columns (<code>c("2", "10")</code>) come back ordered <code>"10", "2"</code>. Coerce these to
+<code>factor</code> with the desired level order before fitting if order matters.</p></dd>
 
 </dl></div>
     <div class="section level2">

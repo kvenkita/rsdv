@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rsdv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,68 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.0" id="rsdv-010">rsdv 0.1.0<a class="anchor" aria-label="anchor" href="#rsdv-010"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.0" id="rsdv-020">rsdv 0.2.0<a class="anchor" aria-label="anchor" href="#rsdv-020"></a></h2>
+<p>A correctness and robustness release driven by a code review of 0.1.0 (see <a href="https://github.com/kvenkita/rsdv/issues/12" class="external-link">issue </a><a href="https://github.com/kvenkita/rsdv/issues/12" class="external-link">#12</a> for the full catalogue). Two changes alter previously-returned numeric output and are called out separately below.</p>
+<div class="section level3">
+<h3 id="id_-default-output-changes-potentially-breaking-0-2-0">⚠ Default-output changes (potentially breaking)<a class="anchor" aria-label="anchor" href="#id_-default-output-changes-potentially-breaking-0-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/nndr.html">nndr()</a></code> now standardises (z-scores) each numerical column by the <strong>real-data</strong> mean and standard deviation before the nearest-neighbour distance is computed. Without this, a single large-scale column (e.g. <code>income</code> in dollars) dominated the Euclidean distance and the score moved with measurement units rather than with row similarity. Pass <code>normalize = FALSE</code> to recover the previous behaviour exactly.</li>
+<li>
+<code><a href="../reference/correlation_similarity.html">correlation_similarity()</a></code> and <code><a href="../reference/contingency_similarity.html">contingency_similarity()</a></code> now return <code>score = NA_real_</code> (rather than <code>1</code>) when there are fewer than two columns of the relevant type, and <code><a href="../reference/diagnostic_report.html">diagnostic_report()</a></code> returns <code>NA_real_</code> per column when the synthetic column is entirely <code>NA</code>. Aggregated property scores in <code><a href="../reference/quality_report.html">quality_report()</a></code> / <code><a href="../reference/diagnostic_report.html">diagnostic_report()</a></code> skip these NAs (<code>na.rm = TRUE</code>) so they no longer overstate fidelity with a synthetic “1” where there is no signal to measure.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-2-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/equality_constraint.html">equality_constraint()</a></code> gains a <code>tolerance</code> argument: with <code>tolerance &gt; 0</code> on numeric columns, the check is <code>abs(a - b) &lt;= tolerance</code> instead of exact <code>==</code>. Default <code>0</code> preserves prior behaviour.</li>
+<li>
+<code><a href="../reference/custom_constraint.html">custom_constraint()</a></code> gains a <code>vectorized</code> argument: when <code>TRUE</code>, the predicate is called <strong>once</strong> with the whole data frame instead of once per row. Substantially faster on large synthetic samples for vectorisable predicates.</li>
+<li>
+<code><a href="../reference/ml_efficacy.html">ml_efficacy()</a></code> gains a <code>seed</code> argument for reproducible train/test splits. The caller’s global RNG state is restored on exit, so callers using <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> elsewhere are unaffected.</li>
+<li>
+<code><a href="../reference/nndr.html">nndr()</a></code> gains a <code>normalize</code> argument (default <code>TRUE</code>) — see the default-output note above.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> methods for <code>equality_constraint</code>, <code>inequality_constraint</code>, <code>fixed_combinations_constraint</code>, and <code>custom_constraint</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="robustness-and-correctness-0-2-0">Robustness and correctness<a class="anchor" aria-label="anchor" href="#robustness-and-correctness-0-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/metadata_to_json.html">metadata_to_json()</a></code> / <code><a href="../reference/metadata_from_json.html">metadata_from_json()</a></code> now round-trip the structural constraint types (<code>equality</code>, <code>inequality</code>, and <code>fixed_combinations</code>). <code>custom_constraint</code> cannot be serialised — it holds an R closure — and is dropped with a warning. Previously <code><a href="../reference/metadata_to_json.html">metadata_to_json()</a></code> crashed on <strong>any</strong> constraint, so <code><a href="../reference/save_metadata.html">save_metadata()</a></code> was effectively broken for non-trivial metadata.</li>
+<li>
+<code>check_constraint.equality_constraint</code> and <code>check_constraint.inequality_constraint</code> now return <code>FALSE</code> (not <code>NA</code>) for rows containing <code>NA</code>. This prevents <code>NA</code> from propagating into the row selector used by <code><a href="../reference/sample.html">sample()</a></code>’s rejection loop, which previously inserted phantom NA-only rows.</li>
+<li>
+<code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> now honours metadata constraints alongside the user-supplied conditions (previously it filtered only on the conditions).</li>
+<li>
+<code><a href="../reference/tvd_similarity.html">tvd_similarity()</a></code> now strips <code>NA</code>s from both sides and divides by the non-NA count on each side; previously NA-padding inflated TVD.</li>
+<li>
+<code><a href="../reference/ks_similarity.html">ks_similarity()</a></code> now suppresses the <code><a href="https://rdrr.io/r/stats/ks.test.html" class="external-link">ks.test()</a></code> <em>“p-value will be approximate in the presence of ties”</em> warning, which it leaked to users on any tied integer column (very common in tables with integer ages, capital gains, etc.).</li>
+<li>
+<code>fixed_combinations_constraint</code> now uses a collision-free length-prefix key encoding (<code>"&lt;nchar&gt;:&lt;value&gt;"</code>), removing a theoretical separator collision in the previous paste-based comparison.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="clearer-errors-and-validations-0-2-0">Clearer errors and validations<a class="anchor" aria-label="anchor" href="#clearer-errors-and-validations-0-2-0"></a></h3>
+<ul><li>
+<code>fit.gaussian_copula_synthesizer()</code> errors clearly when a modeled column is entirely <code>NA</code> or when no row is complete across all modeled columns. Previously the user saw a cryptic <code>'dim' must be an integer (&gt;= 2)</code> from inside <code><a href="https://rdrr.io/pkg/copula/man/ellipCopula.html" class="external-link">copula::normalCopula</a></code>.</li>
+<li>
+<code><a href="../reference/ml_efficacy.html">ml_efficacy()</a></code> validates <code>target_col</code> (must be a column of <code>real</code>) and <code>test_fraction</code> (must be strictly between 0 and 1) up front.</li>
+<li>
+<code><a href="../reference/attribute_disclosure_risk.html">attribute_disclosure_risk()</a></code> validates that <code>known_cols</code> are present and numeric (one-hot encode categorical knowns first); previously triggered a cryptic <code><a href="https://rdrr.io/pkg/FNN/man/knn.index.html" class="external-link">FNN::knnx.index</a></code> error.</li>
+<li>
+<code><a href="../reference/gaussian_copula_synthesizer.html">gaussian_copula_synthesizer()</a></code> cross-checks <code>numerical_distributions</code> names against the metadata’s numerical columns; silently-ignored typos like <code>list(capitl_gain = "gamma")</code> now raise a clear error.</li>
+<li>
+<code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> validates that <code>.n</code> values are positive whole numbers (was silently truncating or accepting negatives).</li>
+<li>
+<code><a href="../reference/privacy_report.html">privacy_report()</a></code> errors when only one of <code>sensitive_col</code> / <code>known_cols</code> is supplied (previously silently dropped disclosure-risk computation).</li>
+<li>
+<code><a href="../reference/set_primary_key.html">set_primary_key()</a></code> emits an advisory warning when the column’s metadata type is not <code>"id"</code>, since the column would otherwise be modeled as ordinary data and the diagnostic key-uniqueness check would typically fail.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-2-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/set_column_type.html">set_column_type()</a></code> docstring documents the level-ordering rule for categorical columns — <code>factor</code> keeps <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order, character is sorted <strong>lexicographically</strong> (<code>c("2", "10")</code> becomes levels <code>c("10", "2")</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="rsdv-010">rsdv 0.1.0<a class="anchor" aria-label="anchor" href="#rsdv-010"></a></h2><p class="text-muted">CRAN release: 2026-06-08</p>
 <p>Initial CRAN release.</p>
 <div class="section level3">
 <h3 id="synthesizer-0-1-0">Synthesizer<a class="anchor" aria-label="anchor" href="#synthesizer-0-1-0"></a></h3>

@@ -28,17 +28,5 @@ An `rsdv_constraint` object.
 ref <- data.frame(city = c("NY", "LA"), state = c("NY", "CA"),
                   stringsAsFactors = FALSE)
 fixed_combinations_constraint(c("city", "state"), ref)
-#> $type
-#> [1] "fixed_combinations"
-#> 
-#> $columns
-#> [1] "city"  "state"
-#> 
-#> $allowed
-#>   city state
-#> 1   NY    NY
-#> 2   LA    CA
-#> 
-#> attr(,"class")
-#> [1] "fixed_combinations_constraint" "rsdv_constraint"              
+#> <fixed_combinations_constraint>  city, state  (2 allowed combinations)
 ```

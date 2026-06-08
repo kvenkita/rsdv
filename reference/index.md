@@ -35,6 +35,14 @@
   : Check a single constraint against each row of a data frame
 - [`check_constraints()`](https://kvenkita.github.io/rsdv/reference/check_constraints.md)
   : Check all constraints in metadata against a data frame
+- [`print(`*`<equality_constraint>`*`)`](https://kvenkita.github.io/rsdv/reference/print.equality_constraint.md)
+  : Print method for an equality_constraint
+- [`print(`*`<inequality_constraint>`*`)`](https://kvenkita.github.io/rsdv/reference/print.inequality_constraint.md)
+  : Print method for an inequality_constraint
+- [`print(`*`<fixed_combinations_constraint>`*`)`](https://kvenkita.github.io/rsdv/reference/print.fixed_combinations_constraint.md)
+  : Print method for a fixed_combinations_constraint
+- [`print(`*`<custom_constraint>`*`)`](https://kvenkita.github.io/rsdv/reference/print.custom_constraint.md)
+  : Print method for a custom_constraint
 
 ## Synthesizers
 

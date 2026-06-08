@@ -8,9 +8,9 @@ individual-level detail, rare subgroup representation, longitudinal
 linkage — also make them difficult to share. Data governance procedures,
 informed consent agreements, and privacy regulations all impose friction
 between the data and the analyst. Synthetic data generation addresses
-this problem by learning the statistical structure of a real dataset and
-using that structure to generate a new dataset whose rows are entirely
-artificial but whose distributional properties approximate the original.
+this by learning the statistical structure of a real dataset and using
+it to generate a new one whose rows are artificial but whose
+distributional properties approximate the original.
 
 `rsdv` is an R implementation of the [Synthetic Data Vault
 (SDV)](https://sdv.dev/) framework (Patki, Wedge, and Veeramachaneni
@@ -26,9 +26,8 @@ the synthesizer, generate synthetic rows, and evaluate the result.
 
 ## The R Synthetic Data Ecosystem
 
-The R ecosystem for synthetic data generation encompasses several
-methodological traditions, each suited to a different set of
-requirements.
+Several R packages generate synthetic data, each rooted in a different
+methodological tradition.
 
 **Sequential imputation methods.** `synthpop` (Nowok, Raab, and Dibben
 2016) is the most widely cited R synthesis package. It generates
@@ -36,23 +35,21 @@ synthetic variables one at a time, conditioning each column on those
 already synthesised using parametric models or classification and
 regression trees (CART). The sequential approach is flexible and
 interpretable, and `synthpop` has mature support for multiple-imputation
-inference and disclosure risk measurement. It is the standard tool in
-official statistics applications, particularly within UK government data
-infrastructure. The limitation of sequential CART for high-dimensional
-mixed data is that the joint distribution is approximated
-column-by-column rather than modelled as a single object; correlations
-among many variables accumulate approximation error across steps.
+inference and disclosure risk measurement. It is widely adopted in
+official statistics, including within UK government data infrastructure.
+Sequential CART approximates the joint distribution column-by-column
+rather than modelling it as a single object — so for high-dimensional
+mixed data, correlation error accumulates across steps.
 
 **Adversarial methods.** `arf` (Watson, Blesch, Kapar, and Wright 2023)
 implements Adversarial Random Forests, which partition the feature space
 into locally independent leaves by iterating between a forest-based
 density estimator and a discriminator. On tabular benchmarks it matches
 or outperforms deep generative models while running roughly 100 times
-faster — a meaningful difference for practitioners who cannot afford GPU
-compute. It handles mixed variable types naturally. The package is
-primarily oriented toward ML researchers rather than practitioners in
-regulated industries; it does not provide metadata schemas, quality
-reports, or privacy metrics.
+faster — which matters for practitioners without GPU access. It handles
+mixed variable types naturally. The package is primarily oriented toward
+ML researchers rather than practitioners in regulated industries; it
+does not provide metadata schemas, quality reports, or privacy metrics.
 
 **Rank-based methods.** `synthesizer` (Van der Loo, Statistics
 Netherlands) synthesises data using empirical rank-based correlation,
@@ -65,18 +62,19 @@ needed. Quality metrics beyond pMSE are not built in.
 2015) is a comprehensive toolkit for statistical disclosure control,
 covering suppression, perturbation, microaggregation, and synthesis
 within a unified framework used by national statistical offices
-globally. Synthesis in `sdcMicro` is one method among many rather than
-the primary product; the workflow is designed around disclosure risk
-assessment and perturbation pipelines rather than generative modeling.
+globally. Synthesis in `sdcMicro` is one method among many; synthesis is
+not the primary product, and the workflow is designed around disclosure
+risk assessment and perturbation pipelines rather than generative
+modeling.
 
 **Copula infrastructure.** The `copula` package (Hofert, Kojadinovic,
 Mächler, and Yan) is the foundational R library for copula families
 including Gaussian, t, Clayton, Gumbel, Frank, and Joe. `rsdv` uses
-`copula` internally for fitting and sampling. Packages such as
-`heterocop` (Tomilina, Mazo, and Jaffrézic 2024) and `GenOrd` address
-the methodologically adjacent problem of Gaussian copula estimation for
-mixed discrete and continuous variables, though oriented toward network
-inference and simulation respectively.
+`copula` internally for fitting and sampling. `heterocop` (Tomilina,
+Mazo, and Jaffrézic 2024) and `GenOrd` are methodologically adjacent —
+both estimate Gaussian copulas for mixed discrete and continuous
+variables. `heterocop` targets network inference; `GenOrd` targets
+simulation.
 
 ### Where `rsdv` fits
 
@@ -90,7 +88,7 @@ metrics within their own frameworks but are not designed around
 generative modelling as the primary product. `rsdv`’s architecture is
 designed so that the Gaussian copula can be replaced by a vine copula or
 a deep generative model without changing the user-facing interface,
-providing a clear upgrade path as analytical requirements grow.
+providing a clear upgrade path as needs grow.
 
 ------------------------------------------------------------------------
 
@@ -134,17 +132,17 @@ multivariate normal distribution.
 fitted quantile function; categorical and boolean columns are decoded by
 locating which frequency interval each sampled value falls into.
 
-Because every column — numerical, categorical, and boolean — is embedded
-in a single copula, cross-column dependence is preserved across types:
-numeric-vs-categorical and categorical-vs-categorical associations, not
-just numeric-vs-numeric correlations.
+Because the copula embeds every column — numerical, categorical, and
+boolean — it preserves cross-type dependence: numeric-vs-categorical and
+categorical-vs-categorical associations, not just numeric-vs-numeric
+correlations.
 
-Missing values are handled by fitting the copula on complete cases only.
-By default, `rsdv` records the empirical missingness rate for each
-column during fitting and reinstates it at sampling time. This approach
-models missingness as missing completely at random (MCAR). Systematic
-missingness patterns require pre-imputation before synthesis; see the
-section on missing data below.
+`rsdv` fits the copula on complete cases only; missing values do not
+contribute to the dependence estimate. By default, `rsdv` records the
+empirical missingness rate for each column during fitting and reinstates
+it at sampling time. This approach models missingness as missing
+completely at random (MCAR). Pre-impute systematic missingness before
+synthesis — see the missing-data section below.
 
 ------------------------------------------------------------------------
 
@@ -236,10 +234,9 @@ print(meta)
 | `"id"`          | Row identifier; excluded from synthesis                                                      | Record IDs                      |
 | `"datetime"`    | Date or timestamp; excluded from synthesis                                                   | Survey date                     |
 
-Automatic column type detection is available: passing a data frame to
+Passing a data frame to
 [`metadata()`](https://kvenkita.github.io/rsdv/reference/metadata.md)
-infers column types from R class. You can then override specific types
-with
+auto-detects column types from R class — override specific types with
 [`set_column_type()`](https://kvenkita.github.io/rsdv/reference/set_column_type.md).
 
 ------------------------------------------------------------------------
@@ -254,15 +251,14 @@ syn   <- fit(syn, adult_income)
 synth <- sample(syn, n = 500)
 ```
 
-The result is a data frame with 500 rows and the same six columns as
-`adult_income`. The
-[`fit()`](https://generics.r-lib.org/reference/fit.html) call estimates
-one transformer per registered column and fits the Gaussian copula
-correlation matrix over all modeled columns (numerical, categorical, and
-boolean) on complete cases. The
-[`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) call
-generates `n` synthetic rows by drawing from the fitted copula and
-back-transforming each column through its estimated marginal.
+`synth` is a data frame with 500 rows and the same six columns as
+`adult_income`. [`fit()`](https://generics.r-lib.org/reference/fit.html)
+estimates one transformer per registered column and the Gaussian copula
+correlation matrix over all modeled columns (numerical, categorical,
+boolean) on complete cases.
+[`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) then
+draws `n` rows from the fitted copula and back-transforms each column
+through its estimated marginal.
 
 ### Choosing marginal distributions
 
@@ -290,9 +286,8 @@ marginal.
 ## Conditional Sampling
 
 [`sample_conditions()`](https://kvenkita.github.io/rsdv/reference/sample_conditions.md)
-generates rows in which one or more categorical or boolean columns are
-held to fixed values, while the remaining columns are drawn
-conditionally through the fitted copula (via rejection sampling). This
+fixes one or more categorical or boolean columns to chosen values and
+draws the rest from the fitted copula via rejection sampling. This
 preserves the modeled dependence between the conditioned columns and the
 rest of the table.
 
@@ -307,22 +302,26 @@ table(high_earners$income)
 #>   50
 ```
 
-The optional `.n` column sets how many rows to generate per condition;
-supply multiple rows to request several conditions at once. Conditioning
-on numerical columns is not supported (exact equality is ill-defined for
-continuous values).
+The optional `.n` column sets how many rows per condition (positive
+integers); supply multiple rows for multiple conditions at once.
+Numerical columns cannot be conditioned on — exact equality is
+ill-defined for continuous values.
+[`sample_conditions()`](https://kvenkita.github.io/rsdv/reference/sample_conditions.md)
+also enforces any metadata constraints, rejecting rows that violate them
+just as
+[`sample()`](https://kvenkita.github.io/rsdv/reference/sample.md) does.
 
 ------------------------------------------------------------------------
 
 ## Evaluating Quality
 
-A quality report aggregates metrics into the two-property hierarchy used
-by SDMetrics: **Column Shapes** (per-column marginal fidelity) and
-**Column Pair Trends** (pairwise dependence). The overall score is the
-mean of the two properties, so a table with many categorical columns and
-few numerical ones is not weighted by raw column counts. ML efficacy,
-when requested via `target_col`, is reported separately and excluded
-from the overall score.
+[`quality_report()`](https://kvenkita.github.io/rsdv/reference/quality_report.md)
+aggregates metrics into the two-property hierarchy SDMetrics uses:
+**Column Shapes** (per-column marginal fidelity) and **Column Pair
+Trends** (pairwise dependence). The overall score is the mean of the
+two, so raw column counts don’t tilt it. ML efficacy, when requested via
+`target_col`, is reported separately and excluded from the overall
+score.
 
 ``` r
 qr <- quality_report(adult_income, synth, meta)
@@ -339,14 +338,14 @@ print(qr)
 #>   hours_per_week       0.738
 #> 
 #> Column Similarity (TVD, categorical):
-#>   workclass            0.961
+#>   workclass            0.957
 #>   education            0.944
 #>   marital_status       0.952
-#>   occupation           0.951
+#>   occupation           0.948
 #>   relationship         0.978
 #>   race                 0.990
 #>   sex                  0.992
-#>   native_country       0.976
+#>   native_country       0.973
 #>   income               0.980
 #> 
 #> Property scores:
@@ -419,23 +418,22 @@ and synthetic datasets, scored 0–1 (1 = identical distributions).
 **Total variation distance (TVD) similarity** is the analogous measure
 for categorical columns: it computes the maximum difference in
 probability mass between the real and synthetic frequency distributions,
-on the same scale. Together these form the **Column Shapes** property.
+on the same scale. Together they form the **Column Shapes** property.
 
 The **Column Pair Trends** property captures pairwise dependence:
 **correlation similarity** (`1 - |corr_real - corr_syn| / 2`, averaged
 over numerical pairs) and **contingency similarity** (`1 - TVD` between
-the joint distributions of each categorical pair). Inspect them directly
-with
+the joint distributions of each categorical pair). Inspect them with
 [`correlation_similarity()`](https://kvenkita.github.io/rsdv/reference/correlation_similarity.md)
 and
-[`contingency_similarity()`](https://kvenkita.github.io/rsdv/reference/contingency_similarity.md),
-each of which returns per-pair scores alongside the mean.
+[`contingency_similarity()`](https://kvenkita.github.io/rsdv/reference/contingency_similarity.md)
+— each returns per-pair scores alongside the mean.
 
 ### Correlation structure
 
 The Gaussian copula’s primary purpose is to preserve inter-column
-correlation. The heatmaps below compare the Pearson correlation matrices
-for numerical columns in the real and synthetic datasets.
+correlation; the heatmaps below compare the Pearson correlation matrices
+for the numerical columns in real and synthetic data.
 
 ``` r
 num_cols <- c("age", "education_num", "hours_per_week")
@@ -494,8 +492,7 @@ ggplot2::ggplot(cor_long, ggplot2::aes(var2, var1, fill = value)) +
 
 ### Marginal distributions
 
-Overlaid density curves provide a direct visual check on how closely the
-synthetic marginals match the real data.
+Overlaid density curves compare synthetic and real marginals directly.
 
 ``` r
 age_data <- rbind(
@@ -554,12 +551,12 @@ ggplot2::ggplot(
 
 Where the quality report measures how closely synthetic data *resembles*
 the real data, the diagnostic report checks whether it is *structurally
-valid* — independent of distributional fidelity. It verifies that
-numerical values fall within the observed range (boundary adherence),
-that categorical values use only seen categories (category adherence),
-and that any primary key is unique and complete (key uniqueness), then
-rolls these into a Data Validity score alongside a Data Structure score
-for column coverage.
+valid* — independent of distributional fidelity. It verifies three
+things: that numerical values fall within the observed range (boundary
+adherence), that categorical values use only seen categories (category
+adherence), and that any primary key is unique and complete (key
+uniqueness). The package rolls these into a Data Validity score
+alongside a Data Structure score for column coverage.
 
 ``` r
 dr <- diagnostic_report(adult_income, synth, meta)
@@ -590,9 +587,9 @@ print(dr)
 #> Overall Score:         1.000
 ```
 
-A passing diagnostic (scores at or near 1) is a precondition for
-trusting the quality scores: data that is invalid in structure cannot be
-high quality regardless of how its marginals look.
+Trust the quality scores only after the diagnostic passes (scores at or
+near 1) — structurally invalid data cannot be high-quality, no matter
+how the marginals look.
 
 ------------------------------------------------------------------------
 
@@ -664,13 +661,19 @@ ggplot2::ggplot() +
 
 ![](getting-started_files/figure-html/plot-privacy-1.png)
 
-The **Nearest-Neighbour Distance Ratio (NNDR)** score measures how close
-each synthetic row is to its nearest real neighbour relative to its
-second-nearest real neighbour. A high NNDR (approaching 1) means
-synthetic rows are not suspiciously close to any individual real record
-— the hallmark of low re-identification risk. A score below 0.5 suggests
-the synthesis is memorising real rows rather than learning the
-distribution.
+The **Nearest-Neighbour Distance Ratio (NNDR)** compares each synthetic
+row’s distance to its nearest real neighbour against its distance to its
+second-nearest. A high NNDR (near 1) means no synthetic row is
+suspiciously close to any one real record — the hallmark of low
+re-identification risk. A score below 0.5 suggests the synthesis is
+memorising real rows rather than learning the distribution.
+
+By default [`nndr()`](https://kvenkita.github.io/rsdv/reference/nndr.md)
+z-scores each numerical column using the real-data mean and standard
+deviation before computing the Euclidean distance. Without this step, a
+single large-scale column — income in dollars, for instance — dominates
+the distance and the score moves with units rather than similarity. Pass
+`normalize = FALSE` to opt out.
 
 For attribute disclosure risk — estimating how easily a known set of
 background variables can be used to infer a sensitive value — use
@@ -691,10 +694,10 @@ cat("Attribute disclosure risk (income given age):", round(adr, 3), "\n")
 
 ## Adding Constraints
 
-Constraints allow you to enforce domain-knowledge rules that the copula
-model alone will not guarantee. The constraint system uses rejection
-sampling: rows that fail any constraint are discarded and replaced until
-`n` valid rows are collected.
+Constraints enforce domain-knowledge rules the copula model alone will
+not guarantee. The system uses rejection sampling: `rsdv` discards rows
+that fail any constraint and draws replacements until `n` valid rows are
+collected.
 
 ``` r
 meta_constrained <- meta |>
@@ -712,12 +715,20 @@ all(synth_c$education_num < synth_c$hours_per_week)
 
 **Available constraint types:**
 
-| Function                                   | Condition enforced                               |
-|--------------------------------------------|--------------------------------------------------|
-| `equality_constraint(a, b)`                | `a == b` row-wise                                |
-| `inequality_constraint(a, b, type)`        | `a < b`, `a <= b`, `a > b`, or `a >= b`          |
-| `fixed_combinations_constraint(cols, ref)` | Only combinations present in `ref` are permitted |
-| `custom_constraint(fn)`                    | Arbitrary predicate `f(row) → TRUE/FALSE`        |
+| Function                                    | Condition enforced                                                                                                   |
+|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `equality_constraint(a, b, tolerance = 0)`  | `a == b` row-wise (or `abs(a - b) <= tolerance` for numerics when `tolerance > 0`)                                   |
+| `inequality_constraint(a, b, type)`         | `a < b`, `a <= b`, `a > b`, or `a >= b`                                                                              |
+| `fixed_combinations_constraint(cols, ref)`  | Only combinations present in `ref` are permitted                                                                     |
+| `custom_constraint(fn, vectorized = FALSE)` | Arbitrary predicate; with `vectorized = TRUE`, `fn` is called once on the whole data frame for a substantial speedup |
+
+For continuous numerical columns, exact `==` almost never holds — use
+the `tolerance` argument on
+[`equality_constraint()`](https://kvenkita.github.io/rsdv/reference/equality_constraint.md)
+(or a tight band of
+[`inequality_constraint()`](https://kvenkita.github.io/rsdv/reference/inequality_constraint.md)s).
+Rows containing `NA` fail equality and inequality checks, so the sampler
+rejects them instead of producing phantom NA rows.
 
 ------------------------------------------------------------------------
 
@@ -779,11 +790,10 @@ noisy when the number of rows is small relative to the number of
 numerical columns. A dataset with 3 numerical columns and 100 rows is
 well-conditioned; the same 100 rows with 15 numerical columns is not.
 
-**High-cardinality categorical columns.** When a categorical column has
-more unique levels than the synthetic sample size, some levels will be
-absent from the synthetic output. This is expected sampling behaviour.
-If level coverage matters, increase `n` or aggregate rare levels before
-synthesis.
+When a categorical column has more unique levels than the synthetic
+sample size, some levels will be absent from the synthetic output —
+expected sampling behaviour. If level coverage matters, increase `n` or
+aggregate rare levels before synthesis.
 
 **Unsupported column types.** Columns typed as `"id"` or `"datetime"`
 are excluded from synthesis and will not appear in synthetic output.
@@ -820,12 +830,13 @@ office for a formal privacy impact assessment in regulated environments.
 If you use `rsdv` in published research, please cite the package:
 
 ``` bibtex
-@software{Venkitasubramanian2026rsdv,
-  author  = {Venkitasubramanian, Kailas},
-  title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},
-  year    = {2026},
-  url     = {https://github.com/kvenkita/rsdv},
-  note    = {R package version 0.1.0}
+@Manual{Venkitasubramanian2026rsdv,
+  title  = {{rsdv}: Synthetic Tabular Data Generation with Gaussian Copulas},
+  author = {Venkitasubramanian, Kailas},
+  year   = {2026},
+  note   = {R package version 0.2.0},
+  url    = {https://CRAN.R-project.org/package=rsdv},
+  doi    = {10.32614/CRAN.package.rsdv}
 }
 ```
 

@@ -67,14 +67,14 @@ print(qr)
 #>   hours_per_week       0.748
 #> 
 #> Column Similarity (TVD, categorical):
-#>   workclass            0.981
+#>   workclass            0.978
 #>   education            0.928
 #>   marital_status       0.982
-#>   occupation           0.941
+#>   occupation           0.938
 #>   relationship         0.964
 #>   race                 0.976
 #>   sex                  0.952
-#>   native_country       0.974
+#>   native_country       0.973
 #>   income               0.978
 #> 
 #> Property scores:
@@ -82,6 +82,6 @@ print(qr)
 #>   Column Pair Trends   0.901
 #>     (correlation 0.973, contingency 0.859)
 #> 
-#> Overall Score:               0.888
+#> Overall Score:               0.887
 # }
 ```

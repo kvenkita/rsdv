@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rsdv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,10 +75,9 @@ individual-level detail, rare subgroup representation, longitudinal
 linkage — also make them difficult to share. Data governance procedures,
 informed consent agreements, and privacy regulations all impose friction
 between the data and the analyst. Synthetic data generation addresses
-this problem by learning the statistical structure of a real dataset and
-using that structure to generate a new dataset whose rows are entirely
-artificial but whose distributional properties approximate the
-original.</p>
+this by learning the statistical structure of a real dataset and using
+it to generate a new one whose rows are artificial but whose
+distributional properties approximate the original.</p>
 <p><code>rsdv</code> is an R implementation of the <a href="https://sdv.dev/" class="external-link">Synthetic Data Vault (SDV)</a> framework (Patki,
 Wedge, and Veeramachaneni 2016), bringing a Gaussian copula–based
 synthesis workflow to native R. The package is designed for the applied
@@ -93,9 +92,8 @@ and evaluate the result.</p>
 <div class="section level2">
 <h2 id="the-r-synthetic-data-ecosystem">The R Synthetic Data Ecosystem<a class="anchor" aria-label="anchor" href="#the-r-synthetic-data-ecosystem"></a>
 </h2>
-<p>The R ecosystem for synthetic data generation encompasses several
-methodological traditions, each suited to a different set of
-requirements.</p>
+<p>Several R packages generate synthetic data, each rooted in a
+different methodological tradition.</p>
 <p><strong>Sequential imputation methods.</strong> <code>synthpop</code>
 (Nowok, Raab, and Dibben 2016) is the most widely cited R synthesis
 package. It generates synthetic variables one at a time, conditioning
@@ -103,22 +101,21 @@ each column on those already synthesised using parametric models or
 classification and regression trees (CART). The sequential approach is
 flexible and interpretable, and <code>synthpop</code> has mature support
 for multiple-imputation inference and disclosure risk measurement. It is
-the standard tool in official statistics applications, particularly
-within UK government data infrastructure. The limitation of sequential
-CART for high-dimensional mixed data is that the joint distribution is
-approximated column-by-column rather than modelled as a single object;
-correlations among many variables accumulate approximation error across
+widely adopted in official statistics, including within UK government
+data infrastructure. Sequential CART approximates the joint distribution
+column-by-column rather than modelling it as a single object — so for
+high-dimensional mixed data, correlation error accumulates across
 steps.</p>
 <p><strong>Adversarial methods.</strong> <code>arf</code> (Watson,
 Blesch, Kapar, and Wright 2023) implements Adversarial Random Forests,
 which partition the feature space into locally independent leaves by
 iterating between a forest-based density estimator and a discriminator.
 On tabular benchmarks it matches or outperforms deep generative models
-while running roughly 100 times faster — a meaningful difference for
-practitioners who cannot afford GPU compute. It handles mixed variable
-types naturally. The package is primarily oriented toward ML researchers
-rather than practitioners in regulated industries; it does not provide
-metadata schemas, quality reports, or privacy metrics.</p>
+while running roughly 100 times faster — which matters for practitioners
+without GPU access. It handles mixed variable types naturally. The
+package is primarily oriented toward ML researchers rather than
+practitioners in regulated industries; it does not provide metadata
+schemas, quality reports, or privacy metrics.</p>
 <p><strong>Rank-based methods.</strong> <code>synthesizer</code> (Van
 der Loo, Statistics Netherlands) synthesises data using empirical
 rank-based correlation, with a single <code>rankcor</code> parameter
@@ -131,18 +128,19 @@ are not built in.</p>
 statistical disclosure control, covering suppression, perturbation,
 microaggregation, and synthesis within a unified framework used by
 national statistical offices globally. Synthesis in
-<code>sdcMicro</code> is one method among many rather than the primary
-product; the workflow is designed around disclosure risk assessment and
-perturbation pipelines rather than generative modeling.</p>
+<code>sdcMicro</code> is one method among many; synthesis is not the
+primary product, and the workflow is designed around disclosure risk
+assessment and perturbation pipelines rather than generative
+modeling.</p>
 <p><strong>Copula infrastructure.</strong> The <code>copula</code>
 package (Hofert, Kojadinovic, Mächler, and Yan) is the foundational R
 library for copula families including Gaussian, t, Clayton, Gumbel,
 Frank, and Joe. <code>rsdv</code> uses <code>copula</code> internally
-for fitting and sampling. Packages such as <code>heterocop</code>
-(Tomilina, Mazo, and Jaffrézic 2024) and <code>GenOrd</code> address the
-methodologically adjacent problem of Gaussian copula estimation for
-mixed discrete and continuous variables, though oriented toward network
-inference and simulation respectively.</p>
+for fitting and sampling. <code>heterocop</code> (Tomilina, Mazo, and
+Jaffrézic 2024) and <code>GenOrd</code> are methodologically adjacent —
+both estimate Gaussian copulas for mixed discrete and continuous
+variables. <code>heterocop</code> targets network inference;
+<code>GenOrd</code> targets simulation.</p>
 <div class="section level3">
 <h3 id="where-rsdv-fits">Where <code>rsdv</code> fits<a class="anchor" aria-label="anchor" href="#where-rsdv-fits"></a>
 </h3>
@@ -157,8 +155,7 @@ privacy metrics within their own frameworks but are not designed around
 generative modelling as the primary product. <code>rsdv</code>’s
 architecture is designed so that the Gaussian copula can be replaced by
 a vine copula or a deep generative model without changing the
-user-facing interface, providing a clear upgrade path as analytical
-requirements grow.</p>
+user-facing interface, providing a clear upgrade path as needs grow.</p>
 <hr>
 </div>
 </div>
@@ -198,16 +195,17 @@ the fitted multivariate normal distribution.</p>
 through their fitted quantile function; categorical and boolean columns
 are decoded by locating which frequency interval each sampled value
 falls into.</p>
-<p>Because every column — numerical, categorical, and boolean — is
-embedded in a single copula, cross-column dependence is preserved across
-types: numeric-vs-categorical and categorical-vs-categorical
-associations, not just numeric-vs-numeric correlations.</p>
-<p>Missing values are handled by fitting the copula on complete cases
-only. By default, <code>rsdv</code> records the empirical missingness
-rate for each column during fitting and reinstates it at sampling time.
-This approach models missingness as missing completely at random (MCAR).
-Systematic missingness patterns require pre-imputation before synthesis;
-see the section on missing data below.</p>
+<p>Because the copula embeds every column — numerical, categorical, and
+boolean — it preserves cross-type dependence: numeric-vs-categorical and
+categorical-vs-categorical associations, not just numeric-vs-numeric
+correlations.</p>
+<p><code>rsdv</code> fits the copula on complete cases only; missing
+values do not contribute to the dependence estimate. By default,
+<code>rsdv</code> records the empirical missingness rate for each column
+during fitting and reinstates it at sampling time. This approach models
+missingness as missing completely at random (MCAR). Pre-impute
+systematic missingness before synthesis — see the missing-data section
+below.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -330,9 +328,9 @@ two-level categorical</td>
 </tr>
 </tbody>
 </table>
-<p>Automatic column type detection is available: passing a data frame to
-<code><a href="../reference/metadata.html">metadata()</a></code> infers column types from R class. You can then
-override specific types with <code><a href="../reference/set_column_type.html">set_column_type()</a></code>.</p>
+<p>Passing a data frame to <code><a href="../reference/metadata.html">metadata()</a></code> auto-detects column
+types from R class — override specific types with
+<code><a href="../reference/set_column_type.html">set_column_type()</a></code>.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -344,13 +342,13 @@ override specific types with <code><a href="../reference/set_column_type.html">s
 <span><span class="va">syn</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gaussian_copula_synthesizer.html">gaussian_copula_synthesizer</a></span><span class="op">(</span><span class="va">meta</span><span class="op">)</span></span>
 <span><span class="va">syn</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">syn</span>, <span class="va">adult_income</span><span class="op">)</span></span>
 <span><span class="va">synth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample.html">sample</a></span><span class="op">(</span><span class="va">syn</span>, n <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></code></pre></div>
-<p>The result is a data frame with 500 rows and the same six columns as
-<code>adult_income</code>. The <code><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit()</a></code> call estimates one
-transformer per registered column and fits the Gaussian copula
-correlation matrix over all modeled columns (numerical, categorical, and
-boolean) on complete cases. The <code><a href="../reference/sample.html">sample()</a></code> call generates
-<code>n</code> synthetic rows by drawing from the fitted copula and
-back-transforming each column through its estimated marginal.</p>
+<p><code>synth</code> is a data frame with 500 rows and the same six
+columns as <code>adult_income</code>. <code><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit()</a></code> estimates one
+transformer per registered column and the Gaussian copula correlation
+matrix over all modeled columns (numerical, categorical, boolean) on
+complete cases. <code><a href="../reference/sample.html">sample()</a></code> then draws <code>n</code> rows
+from the fitted copula and back-transforms each column through its
+estimated marginal.</p>
 <div class="section level3">
 <h3 id="choosing-marginal-distributions">Choosing marginal distributions<a class="anchor" aria-label="anchor" href="#choosing-marginal-distributions"></a>
 </h3>
@@ -377,11 +375,10 @@ use a normal marginal.</p>
 <div class="section level2">
 <h2 id="conditional-sampling">Conditional Sampling<a class="anchor" aria-label="anchor" href="#conditional-sampling"></a>
 </h2>
-<p><code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> generates rows in which one or more
-categorical or boolean columns are held to fixed values, while the
-remaining columns are drawn conditionally through the fitted copula (via
-rejection sampling). This preserves the modeled dependence between the
-conditioned columns and the rest of the table.</p>
+<p><code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> fixes one or more categorical or
+boolean columns to chosen values and draws the rest from the fitted
+copula via rejection sampling. This preserves the modeled dependence
+between the conditioned columns and the rest of the table.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">high_earners</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_conditions.html">sample_conditions</a></span><span class="op">(</span></span>
 <span>  <span class="va">syn</span>,</span>
@@ -391,22 +388,24 @@ conditioned columns and the rest of the table.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; &gt;50K </span></span>
 <span><span class="co">#&gt;   50</span></span></code></pre></div>
-<p>The optional <code>.n</code> column sets how many rows to generate
-per condition; supply multiple rows to request several conditions at
-once. Conditioning on numerical columns is not supported (exact equality
-is ill-defined for continuous values).</p>
+<p>The optional <code>.n</code> column sets how many rows per condition
+(positive integers); supply multiple rows for multiple conditions at
+once. Numerical columns cannot be conditioned on — exact equality is
+ill-defined for continuous values. <code><a href="../reference/sample_conditions.html">sample_conditions()</a></code> also
+enforces any metadata constraints, rejecting rows that violate them just
+as <code><a href="../reference/sample.html">sample()</a></code> does.</p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="evaluating-quality">Evaluating Quality<a class="anchor" aria-label="anchor" href="#evaluating-quality"></a>
 </h2>
-<p>A quality report aggregates metrics into the two-property hierarchy
-used by SDMetrics: <strong>Column Shapes</strong> (per-column marginal
-fidelity) and <strong>Column Pair Trends</strong> (pairwise dependence).
-The overall score is the mean of the two properties, so a table with
-many categorical columns and few numerical ones is not weighted by raw
-column counts. ML efficacy, when requested via <code>target_col</code>,
-is reported separately and excluded from the overall score.</p>
+<p><code><a href="../reference/quality_report.html">quality_report()</a></code> aggregates metrics into the
+two-property hierarchy SDMetrics uses: <strong>Column Shapes</strong>
+(per-column marginal fidelity) and <strong>Column Pair Trends</strong>
+(pairwise dependence). The overall score is the mean of the two, so raw
+column counts don’t tilt it. ML efficacy, when requested via
+<code>target_col</code>, is reported separately and excluded from the
+overall score.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/quality_report.html">quality_report</a></span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span>, <span class="va">meta</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">qr</span><span class="op">)</span></span>
@@ -422,14 +421,14 @@ is reported separately and excluded from the overall score.</p>
 <span><span class="co">#&gt;   hours_per_week       0.738</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Column Similarity (TVD, categorical):</span></span>
-<span><span class="co">#&gt;   workclass            0.961</span></span>
+<span><span class="co">#&gt;   workclass            0.957</span></span>
 <span><span class="co">#&gt;   education            0.944</span></span>
 <span><span class="co">#&gt;   marital_status       0.952</span></span>
-<span><span class="co">#&gt;   occupation           0.951</span></span>
+<span><span class="co">#&gt;   occupation           0.948</span></span>
 <span><span class="co">#&gt;   relationship         0.978</span></span>
 <span><span class="co">#&gt;   race                 0.990</span></span>
 <span><span class="co">#&gt;   sex                  0.992</span></span>
-<span><span class="co">#&gt;   native_country       0.976</span></span>
+<span><span class="co">#&gt;   native_country       0.973</span></span>
 <span><span class="co">#&gt;   income               0.980</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Property scores:</span></span>
@@ -498,23 +497,23 @@ column in the real and synthetic datasets, scored 0–1 (1 = identical
 distributions). <strong>Total variation distance (TVD)
 similarity</strong> is the analogous measure for categorical columns: it
 computes the maximum difference in probability mass between the real and
-synthetic frequency distributions, on the same scale. Together these
-form the <strong>Column Shapes</strong> property.</p>
+synthetic frequency distributions, on the same scale. Together they form
+the <strong>Column Shapes</strong> property.</p>
 <p>The <strong>Column Pair Trends</strong> property captures pairwise
 dependence: <strong>correlation similarity</strong>
 (<code>1 - |corr_real - corr_syn| / 2</code>, averaged over numerical
 pairs) and <strong>contingency similarity</strong> (<code>1 - TVD</code>
 between the joint distributions of each categorical pair). Inspect them
-directly with <code><a href="../reference/correlation_similarity.html">correlation_similarity()</a></code> and
-<code><a href="../reference/contingency_similarity.html">contingency_similarity()</a></code>, each of which returns per-pair
-scores alongside the mean.</p>
+with <code><a href="../reference/correlation_similarity.html">correlation_similarity()</a></code> and
+<code><a href="../reference/contingency_similarity.html">contingency_similarity()</a></code> — each returns per-pair scores
+alongside the mean.</p>
 </div>
 <div class="section level3">
 <h3 id="correlation-structure">Correlation structure<a class="anchor" aria-label="anchor" href="#correlation-structure"></a>
 </h3>
 <p>The Gaussian copula’s primary purpose is to preserve inter-column
-correlation. The heatmaps below compare the Pearson correlation matrices
-for numerical columns in the real and synthetic datasets.</p>
+correlation; the heatmaps below compare the Pearson correlation matrices
+for the numerical columns in real and synthetic data.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">num_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"education_num"</span>, <span class="st">"hours_per_week"</span><span class="op">)</span></span>
 <span></span>
@@ -571,8 +570,8 @@ for numerical columns in the real and synthetic datasets.</p>
 <div class="section level3">
 <h3 id="marginal-distributions">Marginal distributions<a class="anchor" aria-label="anchor" href="#marginal-distributions"></a>
 </h3>
-<p>Overlaid density curves provide a direct visual check on how closely
-the synthetic marginals match the real data.</p>
+<p>Overlaid density curves compare synthetic and real marginals
+directly.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">age_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>value <span class="op">=</span> <span class="va">adult_income</span><span class="op">$</span><span class="va">age</span>, source <span class="op">=</span> <span class="st">"Real"</span><span class="op">)</span>,</span>
@@ -627,11 +626,12 @@ the synthetic marginals match the real data.</p>
 <p>Where the quality report measures how closely synthetic data
 <em>resembles</em> the real data, the diagnostic report checks whether
 it is <em>structurally valid</em> — independent of distributional
-fidelity. It verifies that numerical values fall within the observed
-range (boundary adherence), that categorical values use only seen
-categories (category adherence), and that any primary key is unique and
-complete (key uniqueness), then rolls these into a Data Validity score
-alongside a Data Structure score for column coverage.</p>
+fidelity. It verifies three things: that numerical values fall within
+the observed range (boundary adherence), that categorical values use
+only seen categories (category adherence), and that any primary key is
+unique and complete (key uniqueness). The package rolls these into a
+Data Validity score alongside a Data Structure score for column
+coverage.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnostic_report.html">diagnostic_report</a></span><span class="op">(</span><span class="va">adult_income</span>, <span class="va">synth</span>, <span class="va">meta</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">dr</span><span class="op">)</span></span>
@@ -659,9 +659,9 @@ alongside a Data Structure score for column coverage.</p>
 <span><span class="co">#&gt; Data Structure score:  1.000</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Overall Score:         1.000</span></span></code></pre></div>
-<p>A passing diagnostic (scores at or near 1) is a precondition for
-trusting the quality scores: data that is invalid in structure cannot be
-high quality regardless of how its marginals look.</p>
+<p>Trust the quality scores only after the diagnostic passes (scores at
+or near 1) — structurally invalid data cannot be high-quality, no matter
+how the marginals look.</p>
 <hr>
 </div>
 </div>
@@ -729,13 +729,18 @@ high quality regardless of how its marginals look.</p>
 <span>    plot.subtitle    <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/plot-privacy-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>The <strong>Nearest-Neighbour Distance Ratio (NNDR)</strong> score
-measures how close each synthetic row is to its nearest real neighbour
-relative to its second-nearest real neighbour. A high NNDR (approaching
-1) means synthetic rows are not suspiciously close to any individual
-real record — the hallmark of low re-identification risk. A score below
-0.5 suggests the synthesis is memorising real rows rather than learning
-the distribution.</p>
+<p>The <strong>Nearest-Neighbour Distance Ratio (NNDR)</strong> compares
+each synthetic row’s distance to its nearest real neighbour against its
+distance to its second-nearest. A high NNDR (near 1) means no synthetic
+row is suspiciously close to any one real record — the hallmark of low
+re-identification risk. A score below 0.5 suggests the synthesis is
+memorising real rows rather than learning the distribution.</p>
+<p>By default <code><a href="../reference/nndr.html">nndr()</a></code> z-scores each numerical column using
+the real-data mean and standard deviation before computing the Euclidean
+distance. Without this step, a single large-scale column — income in
+dollars, for instance — dominates the distance and the score moves with
+units rather than similarity. Pass <code>normalize = FALSE</code> to opt
+out.</p>
 <p>For attribute disclosure risk — estimating how easily a known set of
 background variables can be used to infer a sensitive value — use
 <code><a href="../reference/attribute_disclosure_risk.html">attribute_disclosure_risk()</a></code>:</p>
@@ -753,10 +758,10 @@ background variables can be used to infer a sensitive value — use
 <div class="section level2">
 <h2 id="adding-constraints">Adding Constraints<a class="anchor" aria-label="anchor" href="#adding-constraints"></a>
 </h2>
-<p>Constraints allow you to enforce domain-knowledge rules that the
-copula model alone will not guarantee. The constraint system uses
-rejection sampling: rows that fail any constraint are discarded and
-replaced until <code>n</code> valid rows are collected.</p>
+<p>Constraints enforce domain-knowledge rules the copula model alone
+will not guarantee. The system uses rejection sampling:
+<code>rsdv</code> discards rows that fail any constraint and draws
+replacements until <code>n</code> valid rows are collected.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta_constrained</span> <span class="op">&lt;-</span> <span class="va">meta</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_constraint.html">add_constraint</a></span><span class="op">(</span></span>
@@ -781,9 +786,11 @@ replaced until <code>n</code> valid rows are collected.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>equality_constraint(a, b)</code></td>
+<td><code>equality_constraint(a, b, tolerance = 0)</code></td>
 <td>
-<code>a == b</code> row-wise</td>
+<code>a == b</code> row-wise (or
+<code>abs(a - b) &lt;= tolerance</code> for numerics when
+<code>tolerance &gt; 0</code>)</td>
 </tr>
 <tr class="even">
 <td><code>inequality_constraint(a, b, type)</code></td>
@@ -797,12 +804,19 @@ replaced until <code>n</code> valid rows are collected.</p>
 <td>Only combinations present in <code>ref</code> are permitted</td>
 </tr>
 <tr class="even">
-<td><code>custom_constraint(fn)</code></td>
-<td>Arbitrary predicate <code>f(row) → TRUE/FALSE</code>
-</td>
+<td><code>custom_constraint(fn, vectorized = FALSE)</code></td>
+<td>Arbitrary predicate; with <code>vectorized = TRUE</code>,
+<code>fn</code> is called once on the whole data frame for a substantial
+speedup</td>
 </tr>
 </tbody>
 </table>
+<p>For continuous numerical columns, exact <code>==</code> almost never
+holds — use the <code>tolerance</code> argument on
+<code><a href="../reference/equality_constraint.html">equality_constraint()</a></code> (or a tight band of
+<code><a href="../reference/inequality_constraint.html">inequality_constraint()</a></code>s). Rows containing <code>NA</code>
+fail equality and inequality checks, so the sampler rejects them instead
+of producing phantom NA rows.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -862,9 +876,8 @@ samples, but correlation estimates become noisy when the number of rows
 is small relative to the number of numerical columns. A dataset with 3
 numerical columns and 100 rows is well-conditioned; the same 100 rows
 with 15 numerical columns is not.</p>
-<p><strong>High-cardinality categorical columns.</strong> When a
-categorical column has more unique levels than the synthetic sample
-size, some levels will be absent from the synthetic output. This is
+<p>When a categorical column has more unique levels than the synthetic
+sample size, some levels will be absent from the synthetic output —
 expected sampling behaviour. If level coverage matters, increase
 <code>n</code> or aggregate rare levels before synthesis.</p>
 <p><strong>Unsupported column types.</strong> Columns typed as
@@ -900,13 +913,14 @@ environments.</p>
 </h2>
 <p>If you use <code>rsdv</code> in published research, please cite the
 package:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co">@software{Venkitasubramanian2026rsdv,</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="co">  author  = {Venkitasubramanian, Kailas},</span></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="co">  title   = {{rsdv}: Synthetic Tabular Data Generation in {R}},</span></span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co">  year    = {2026},</span></span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">  url     = {https://github.com/kvenkita/rsdv},</span></span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">  note    = {R package version 0.1.0}</span></span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">Venkitasubramanian2026rsdv</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="dt">title</span>  = {{rsdv}: Synthetic Tabular Data Generation with Gaussian Copulas},</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="dt">author</span> = {Venkitasubramanian, Kailas},</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.2.0},</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://CRAN.R-project.org/package=rsdv},</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>  <span class="dt">doi</span>    = {10.32614/CRAN.package.rsdv}</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>}</span></code></pre></div>
 <p>You can also retrieve the citation from within R:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"rsdv"</span><span class="op">)</span></span></code></pre></div>

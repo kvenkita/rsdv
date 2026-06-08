@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rsdv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,6 +82,7 @@
 <span></span>
 <span><span class="co"># Describe column types</span></span>
 <span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/metadata.html">metadata</a></span><span class="op">(</span><span class="va">adult_income</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/set_column_type.html">set_column_type</a></span><span class="op">(</span><span class="st">"id"</span>,         <span class="st">"id"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/set_column_type.html">set_column_type</a></span><span class="op">(</span><span class="st">"age"</span>,        <span class="st">"numerical"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/set_column_type.html">set_column_type</a></span><span class="op">(</span><span class="st">"occupation"</span>, <span class="st">"categorical"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/set_column_type.html">set_column_type</a></span><span class="op">(</span><span class="st">"income"</span>,     <span class="st">"categorical"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -101,31 +102,30 @@
 <span><span class="co">#&gt; == rsdv Quality Report ==</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Column Similarity (KS, numerical):</span></span>
-<span><span class="co">#&gt;   id                   0.958</span></span>
-<span><span class="co">#&gt;   age                  0.948</span></span>
-<span><span class="co">#&gt;   fnlwgt               0.950</span></span>
-<span><span class="co">#&gt;   education_num        0.780</span></span>
+<span><span class="co">#&gt;   age                  0.960</span></span>
+<span><span class="co">#&gt;   fnlwgt               0.936</span></span>
+<span><span class="co">#&gt;   education_num        0.776</span></span>
 <span><span class="co">#&gt;   capital_gain         0.468</span></span>
-<span><span class="co">#&gt;   capital_loss         0.470</span></span>
-<span><span class="co">#&gt;   hours_per_week       0.738</span></span>
+<span><span class="co">#&gt;   capital_loss         0.484</span></span>
+<span><span class="co">#&gt;   hours_per_week       0.724</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Column Similarity (TVD, categorical):</span></span>
-<span><span class="co">#&gt;   workclass            0.961</span></span>
-<span><span class="co">#&gt;   education            0.944</span></span>
-<span><span class="co">#&gt;   marital_status       0.952</span></span>
-<span><span class="co">#&gt;   occupation           0.951</span></span>
-<span><span class="co">#&gt;   relationship         0.978</span></span>
-<span><span class="co">#&gt;   race                 0.990</span></span>
-<span><span class="co">#&gt;   sex                  0.992</span></span>
-<span><span class="co">#&gt;   native_country       0.976</span></span>
-<span><span class="co">#&gt;   income               0.980</span></span>
+<span><span class="co">#&gt;   workclass            0.973</span></span>
+<span><span class="co">#&gt;   education            0.942</span></span>
+<span><span class="co">#&gt;   marital_status       0.988</span></span>
+<span><span class="co">#&gt;   occupation           0.935</span></span>
+<span><span class="co">#&gt;   relationship         0.970</span></span>
+<span><span class="co">#&gt;   race                 0.988</span></span>
+<span><span class="co">#&gt;   sex                  1.000</span></span>
+<span><span class="co">#&gt;   native_country       0.956</span></span>
+<span><span class="co">#&gt;   income               0.972</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Property scores:</span></span>
-<span><span class="co">#&gt;   Column Shapes        0.877</span></span>
-<span><span class="co">#&gt;   Column Pair Trends   0.903</span></span>
-<span><span class="co">#&gt;     (correlation 0.967, contingency 0.865)</span></span>
+<span><span class="co">#&gt;   Column Shapes        0.871</span></span>
+<span><span class="co">#&gt;   Column Pair Trends   0.893</span></span>
+<span><span class="co">#&gt;     (correlation 0.965, contingency 0.864)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Overall Score:               0.890</span></span></code></pre></div>
+<span><span class="co">#&gt; Overall Score:               0.882</span></span></code></pre></div>
 <p><code><a href="reference/quality_report.html">quality_report()</a></code> aggregates metrics into the two-property hierarchy used by SDMetrics — <strong>Column Shapes</strong> (per-column marginal fidelity) and <strong>Column Pair Trends</strong> (correlation similarity for numerical pairs, contingency similarity for categorical pairs) — with the overall score the mean of the two.</p>
 <p><code><a href="reference/diagnostic_report.html">diagnostic_report()</a></code> complements it with structural-validity checks (value ranges, category adherence, key uniqueness), and <code><a href="reference/sample_conditions.html">sample_conditions()</a></code> generates rows that hold given categorical values fixed:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
